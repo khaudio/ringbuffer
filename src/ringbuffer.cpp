@@ -21,7 +21,7 @@ processingIndex(0)
 }
 
 template <typename T>
-RingBuffer<T>::RingBuffer(int_fast32_t bufferSize, int8_t ringSize)
+RingBuffer<T>::RingBuffer(int_fast32_t bufferSize, int_fast8_t ringSize)
 {
     set_size(bufferSize, ringSize);
 }
@@ -773,20 +773,9 @@ template class Buffer::RingBuffer<uint32_t>;
 template class Buffer::RingBuffer<int64_t>;
 template class Buffer::RingBuffer<uint64_t>;
 
-template class Buffer::RingBuffer<int_fast8_t>;
-template class Buffer::RingBuffer<uint_fast8_t>;
-template class Buffer::RingBuffer<int_fast16_t>;
-template class Buffer::RingBuffer<uint_fast16_t>;
-template class Buffer::RingBuffer<int_fast32_t>;
-template class Buffer::RingBuffer<uint_fast32_t>;
-template class Buffer::RingBuffer<int_fast64_t>;
-template class Buffer::RingBuffer<uint_fast64_t>;
-
 template class Buffer::RingBuffer<float>;
 template class Buffer::RingBuffer<double>;
 template class Buffer::RingBuffer<long double>;
-
-template class Buffer::RingBuffer<int>;
 
 template class Buffer::RingBuffer<char>;
 template class Buffer::RingBuffer<wchar_t>;
