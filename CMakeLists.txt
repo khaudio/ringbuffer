@@ -8,10 +8,8 @@ add_library(ringbuffer src/ringbuffer.cpp)
 target_include_directories(ringbuffer
     INTERFACE
         ${CMAKE_CURRENT_SOURCE_DIR}/inc
-
     PRIVATE
         ${CMAKE_CURRENT_SOURCE_DIR}/inc
-    
     PUBLIC
         ${CMAKE_CURRENT_SOURCE_DIR}/inc
 )

@@ -85,12 +85,11 @@ void RingBuffer<T>::set_size(int_fast32_t bufferSize, int_fast8_t ringSize)
     this->_samplesUnread = this->_bufferLength;
     this->_buffered = 0;
     this->ring = std::vector<std::vector<T>>();
-    this->ring.reserve(this->_ringLength);
-    for (int_fast32_t i(0); i < this->_ringLength; ++i)
+    for (int_fast8_t i(0); i < this->_ringLength; ++i)
     {
         this->ring.emplace_back(std::vector<T>());
         this->ring[i].reserve(this->_bufferLength);
-        for (int32_t j(0); j < this->_bufferLength; ++j)
+        for (int_fast32_t j(0); j < this->_bufferLength; ++j)
         {
             this->ring[i].emplace_back(T(0));
         }
@@ -380,7 +379,6 @@ inline T* RingBuffer<T>::get_read_buffer_sample()
     return &(this->ring[this->readIndex][0]);
 }
 
-
 template <typename T>
 inline uint8_t* RingBuffer<T>::get_read_buffer_byte()
 {
@@ -407,7 +405,7 @@ inline uint8_t* RingBuffer<T>::get_read_byte()
 template <typename T>
 inline void RingBuffer<T>::rotate_read_index()
 {
-    this->readIndex = (this->readIndex % this->_ringLength);
+    ++this->readIndex %= this->_ringLength;
 }
 
 template <typename T>
@@ -580,7 +578,10 @@ inline uint8_t* RingBuffer<T>::get_write_buffer_byte()
 template <typename T>
 T* RingBuffer<T>::get_write_sample()
 {
-    return &(this->ring[this->writeIndex][this->_samplesWritten]);
+    return &(this->ring[this->writeIndex][
+            this->_bufferLength
+            - this->_samplesUnwritten
+        ]);
 }
 
 template <typename T>
@@ -592,7 +593,7 @@ uint8_t* RingBuffer<T>::get_write_byte()
 template <typename T>
 inline void RingBuffer<T>::rotate_write_index()
 {
-    this->writeIndex = (this->writeIndex % this->_ringLength);
+    ++this->writeIndex %= this->_ringLength;
 }
 
 template <typename T>
@@ -697,7 +698,7 @@ uint8_t* RingBuffer<T>::get_processing_byte()
 template <typename T>
 inline void RingBuffer<T>::rotate_processing_index()
 {
-    this->processingIndex = (this->processingIndex % this->_ringLength);
+    ++this->processingIndex %= this->_ringLength;
 }
 
 template <typename T>
@@ -772,6 +773,8 @@ template class Buffer::RingBuffer<int32_t>;
 template class Buffer::RingBuffer<uint32_t>;
 template class Buffer::RingBuffer<int64_t>;
 template class Buffer::RingBuffer<uint64_t>;
+
+template class Buffer::RingBuffer<int>;
 
 template class Buffer::RingBuffer<float>;
 template class Buffer::RingBuffer<double>;
