@@ -253,7 +253,9 @@ template uint32_t float_to_int<float, uint32_t>(float);
 template int64_t float_to_int<float, int64_t>(float);
 template uint64_t float_to_int<float, uint64_t>(float);
 
+#if (int32_t != int)
 template int float_to_int<float, int>(float);
+#endif
 
 template int8_t float_to_int<double, int8_t>(double);
 template uint8_t float_to_int<double, uint8_t>(double);
@@ -264,7 +266,9 @@ template uint32_t float_to_int<double, uint32_t>(double);
 template int64_t float_to_int<double, int64_t>(double);
 template uint64_t float_to_int<double, uint64_t>(double);
 
+#if (int32_t != int)
 template int float_to_int<double, int>(double);
+#endif
 
 template int8_t float_to_int<long double, int8_t>(long double);
 template uint8_t float_to_int<long double, uint8_t>(long double);
@@ -275,7 +279,9 @@ template uint32_t float_to_int<long double, uint32_t>(long double);
 template int64_t float_to_int<long double, int64_t>(long double);
 template uint64_t float_to_int<long double, uint64_t>(long double);
 
+#if (int32_t != int)
 template int float_to_int<long double, int>(long double);
+#endif
 
 template void float_to_int<float, int8_t>(int8_t*, float*);
 template void float_to_int<float, uint8_t>(uint8_t*, float*);
@@ -286,7 +292,9 @@ template void float_to_int<float, uint32_t>(uint32_t*, float*);
 template void float_to_int<float, int64_t>(int64_t*, float*);
 template void float_to_int<float, uint64_t>(uint64_t*, float*);
 
+#if (int32_t != int)
 template void float_to_int<float, int>(int*, float*);
+#endif
 
 template void float_to_int<double, int8_t>(int8_t*, double*);
 template void float_to_int<double, uint8_t>(uint8_t*, double*);
@@ -297,7 +305,9 @@ template void float_to_int<double, uint32_t>(uint32_t*, double*);
 template void float_to_int<double, int64_t>(int64_t*, double*);
 template void float_to_int<double, uint64_t>(uint64_t*, double*);
 
+#if (int32_t != int)
 template void float_to_int<double, int>(int*, double*);
+#endif
 
 template void float_to_int<long double, int8_t>(int8_t*, long double*);
 template void float_to_int<long double, uint8_t>(uint8_t*, long double*);
@@ -308,7 +318,9 @@ template void float_to_int<long double, uint32_t>(uint32_t*, long double*);
 template void float_to_int<long double, int64_t>(int64_t*, long double*);
 template void float_to_int<long double, uint64_t>(uint64_t*, long double*);
 
+#if (int32_t != int)
 template void float_to_int<long double, int>(int*, long double*);
+#endif
 
 template void float_to_int<float, int8_t>(int8_t*, float*, int);
 template void float_to_int<float, uint8_t>(uint8_t*, float*, int);
@@ -319,7 +331,9 @@ template void float_to_int<float, uint32_t>(uint32_t*, float*, int);
 template void float_to_int<float, int64_t>(int64_t*, float*, int);
 template void float_to_int<float, uint64_t>(uint64_t*, float*, int);
 
+#if (int32_t != int)
 template void float_to_int<float, int>(int*, float*, int);
+#endif
 
 template void float_to_int<double, int8_t>(int8_t*, double*, int);
 template void float_to_int<double, uint8_t>(uint8_t*, double*, int);
@@ -330,7 +344,9 @@ template void float_to_int<double, uint32_t>(uint32_t*, double*, int);
 template void float_to_int<double, int64_t>(int64_t*, double*, int);
 template void float_to_int<double, uint64_t>(uint64_t*, double*, int);
 
+#if (int32_t != int)
 template void float_to_int<double, int>(int*, double*, int);
+#endif
 
 template void float_to_int<long double, int8_t>(int8_t*, long double*, int);
 template void float_to_int<long double, uint8_t>(uint8_t*, long double*, int);
@@ -341,7 +357,9 @@ template void float_to_int<long double, uint32_t>(uint32_t*, long double*, int);
 template void float_to_int<long double, int64_t>(int64_t*, long double*, int);
 template void float_to_int<long double, uint64_t>(uint64_t*, long double*, int);
 
+#if (int32_t != int)
 template void float_to_int<long double, int>(int*, long double*, int);
+#endif
 
 template std::vector<int8_t> float_to_int<float, int8_t>(std::vector<float>);
 template std::vector<uint8_t> float_to_int<float, uint8_t>(std::vector<float>);
@@ -352,7 +370,9 @@ template std::vector<uint32_t> float_to_int<float, uint32_t>(std::vector<float>)
 template std::vector<int64_t> float_to_int<float, int64_t>(std::vector<float>);
 template std::vector<uint64_t> float_to_int<float, uint64_t>(std::vector<float>);
 
+#if (int32_t != int)
 template std::vector<int> float_to_int<float, int>(std::vector<float>);
+#endif
 
 template std::vector<int8_t> float_to_int<double, int8_t>(std::vector<double>);
 template std::vector<uint8_t> float_to_int<double, uint8_t>(std::vector<double>);
@@ -363,7 +383,9 @@ template std::vector<uint32_t> float_to_int<double, uint32_t>(std::vector<double
 template std::vector<int64_t> float_to_int<double, int64_t>(std::vector<double>);
 template std::vector<uint64_t> float_to_int<double, uint64_t>(std::vector<double>);
 
+#if (int32_t != int)
 template std::vector<int> float_to_int<double, int>(std::vector<double>);
+#endif
 
 template std::vector<int8_t> float_to_int<long double, int8_t>(std::vector<long double>);
 template std::vector<uint8_t> float_to_int<long double, uint8_t>(std::vector<long double>);
@@ -374,7 +396,9 @@ template std::vector<uint32_t> float_to_int<long double, uint32_t>(std::vector<l
 template std::vector<int64_t> float_to_int<long double, int64_t>(std::vector<long double>);
 template std::vector<uint64_t> float_to_int<long double, uint64_t>(std::vector<long double>);
 
+#if (int32_t != int)
 template std::vector<int> float_to_int<long double, int>(std::vector<long double>);
+#endif
 
 template void float_to_int<float, int8_t>(std::vector<int8_t>*, std::vector<float>*);
 template void float_to_int<float, uint8_t>(std::vector<uint8_t>*, std::vector<float>*);
@@ -385,7 +409,9 @@ template void float_to_int<float, uint32_t>(std::vector<uint32_t>*, std::vector<
 template void float_to_int<float, int64_t>(std::vector<int64_t>*, std::vector<float>*);
 template void float_to_int<float, uint64_t>(std::vector<uint64_t>*, std::vector<float>*);
 
+#if (int32_t != int)
 template void float_to_int<float, int>(std::vector<int>*, std::vector<float>*);
+#endif
 
 template void float_to_int<double, int8_t>(std::vector<int8_t>*, std::vector<double>*);
 template void float_to_int<double, uint8_t>(std::vector<uint8_t>*, std::vector<double>*);
@@ -396,7 +422,9 @@ template void float_to_int<double, uint32_t>(std::vector<uint32_t>*, std::vector
 template void float_to_int<double, int64_t>(std::vector<int64_t>*, std::vector<double>*);
 template void float_to_int<double, uint64_t>(std::vector<uint64_t>*, std::vector<double>*);
 
+#if (int32_t != int)
 template void float_to_int<double, int>(std::vector<int>*, std::vector<double>*);
+#endif
 
 template void float_to_int<long double, int8_t>(std::vector<int8_t>*, std::vector<long double>*);
 template void float_to_int<long double, uint8_t>(std::vector<uint8_t>*, std::vector<long double>*);
@@ -407,7 +435,9 @@ template void float_to_int<long double, uint32_t>(std::vector<uint32_t>*, std::v
 template void float_to_int<long double, int64_t>(std::vector<int64_t>*, std::vector<long double>*);
 template void float_to_int<long double, uint64_t>(std::vector<uint64_t>*, std::vector<long double>*);
 
+#if (int32_t != int)
 template void float_to_int<long double, int>(std::vector<int>*, std::vector<long double>*);
+#endif
 
 template void float_to_int<float, int8_t>(std::vector<int8_t>*, std::vector<float>*, int);
 template void float_to_int<float, uint8_t>(std::vector<uint8_t>*, std::vector<float>*, int);
@@ -418,7 +448,9 @@ template void float_to_int<float, uint32_t>(std::vector<uint32_t>*, std::vector<
 template void float_to_int<float, int64_t>(std::vector<int64_t>*, std::vector<float>*, int);
 template void float_to_int<float, uint64_t>(std::vector<uint64_t>*, std::vector<float>*, int);
 
+#if (int32_t != int)
 template void float_to_int<float, int>(std::vector<int>*, std::vector<float>*, int);
+#endif
 
 template void float_to_int<double, int8_t>(std::vector<int8_t>*, std::vector<double>*, int);
 template void float_to_int<double, uint8_t>(std::vector<uint8_t>*, std::vector<double>*, int);
@@ -429,7 +461,9 @@ template void float_to_int<double, uint32_t>(std::vector<uint32_t>*, std::vector
 template void float_to_int<double, int64_t>(std::vector<int64_t>*, std::vector<double>*, int);
 template void float_to_int<double, uint64_t>(std::vector<uint64_t>*, std::vector<double>*, int);
 
+#if (int32_t != int)
 template void float_to_int<double, int>(std::vector<int>*, std::vector<double>*, int);
+#endif
 
 template void float_to_int<long double, int8_t>(std::vector<int8_t>*, std::vector<long double>*, int);
 template void float_to_int<long double, uint8_t>(std::vector<uint8_t>*, std::vector<long double>*, int);
@@ -440,7 +474,9 @@ template void float_to_int<long double, uint32_t>(std::vector<uint32_t>*, std::v
 template void float_to_int<long double, int64_t>(std::vector<int64_t>*, std::vector<long double>*, int);
 template void float_to_int<long double, uint64_t>(std::vector<uint64_t>*, std::vector<long double>*, int);
 
+#if (int32_t != int)
 template void float_to_int<long double, int>(std::vector<int>*, std::vector<long double>*, int);
+#endif
 
 template float int_to_float<int8_t, float>(int8_t);
 template float int_to_float<uint8_t, float>(uint8_t);
@@ -451,7 +487,9 @@ template float int_to_float<uint32_t, float>(uint32_t);
 template float int_to_float<int64_t, float>(int64_t);
 template float int_to_float<uint64_t, float>(uint64_t);
 
+#if (int32_t != int)
 template float int_to_float<int, float>(int);
+#endif
 
 template double int_to_float<int8_t, double>(int8_t);
 template double int_to_float<uint8_t, double>(uint8_t);
@@ -462,7 +500,9 @@ template double int_to_float<uint32_t, double>(uint32_t);
 template double int_to_float<int64_t, double>(int64_t);
 template double int_to_float<uint64_t, double>(uint64_t);
 
+#if (int32_t != int)
 template double int_to_float<int, double>(int);
+#endif
 
 template long double int_to_float<int8_t, long double>(int8_t);
 template long double int_to_float<uint8_t, long double>(uint8_t);
@@ -473,7 +513,9 @@ template long double int_to_float<uint32_t, long double>(uint32_t);
 template long double int_to_float<int64_t, long double>(int64_t);
 template long double int_to_float<uint64_t, long double>(uint64_t);
 
+#if (int32_t != int)
 template long double int_to_float<int, long double>(int);
+#endif
 
 template void int_to_float<int8_t, float>(float*, int8_t*);
 template void int_to_float<uint8_t, float>(float*, uint8_t*);
@@ -484,7 +526,9 @@ template void int_to_float<uint32_t, float>(float*, uint32_t*);
 template void int_to_float<int64_t, float>(float*, int64_t*);
 template void int_to_float<uint64_t, float>(float*, uint64_t*);
 
+#if (int32_t != int)
 template void int_to_float<int, float>(float*, int*);
+#endif
 
 template void int_to_float<int8_t, double>(double*, int8_t*);
 template void int_to_float<uint8_t, double>(double*, uint8_t*);
@@ -495,7 +539,9 @@ template void int_to_float<uint32_t, double>(double*, uint32_t*);
 template void int_to_float<int64_t, double>(double*, int64_t*);
 template void int_to_float<uint64_t, double>(double*, uint64_t*);
 
+#if (int32_t != int)
 template void int_to_float<int, double>(double*, int*);
+#endif
 
 template void int_to_float<int8_t, long double>(long double*, int8_t*);
 template void int_to_float<uint8_t, long double>(long double*, uint8_t*);
@@ -506,7 +552,9 @@ template void int_to_float<uint32_t, long double>(long double*, uint32_t*);
 template void int_to_float<int64_t, long double>(long double*, int64_t*);
 template void int_to_float<uint64_t, long double>(long double*, uint64_t*);
 
+#if (int32_t != int)
 template void int_to_float<int, long double>(long double*, int*);
+#endif
 
 template void int_to_float<int8_t, float>(float*, int8_t*, int);
 template void int_to_float<uint8_t, float>(float*, uint8_t*, int);
@@ -517,7 +565,9 @@ template void int_to_float<uint32_t, float>(float*, uint32_t*, int);
 template void int_to_float<int64_t, float>(float*, int64_t*, int);
 template void int_to_float<uint64_t, float>(float*, uint64_t*, int);
 
+#if (int32_t != int)
 template void int_to_float<int, float>(float*, int*, int);
+#endif
 
 template void int_to_float<int8_t, double>(double*, int8_t*, int);
 template void int_to_float<uint8_t, double>(double*, uint8_t*, int);
@@ -528,7 +578,9 @@ template void int_to_float<uint32_t, double>(double*, uint32_t*, int);
 template void int_to_float<int64_t, double>(double*, int64_t*, int);
 template void int_to_float<uint64_t, double>(double*, uint64_t*, int);
 
+#if (int32_t != int)
 template void int_to_float<int, double>(double*, int*, int);
+#endif
 
 template void int_to_float<int8_t, long double>(long double*, int8_t*, int);
 template void int_to_float<uint8_t, long double>(long double*, uint8_t*, int);
@@ -539,7 +591,9 @@ template void int_to_float<uint32_t, long double>(long double*, uint32_t*, int);
 template void int_to_float<int64_t, long double>(long double*, int64_t*, int);
 template void int_to_float<uint64_t, long double>(long double*, uint64_t*, int);
 
+#if (int32_t != int)
 template void int_to_float<int, long double>(long double*, int*, int);
+#endif
 
 template std::vector<float> int_to_float<int8_t, float>(std::vector<int8_t>);
 template std::vector<float> int_to_float<uint8_t, float>(std::vector<uint8_t>);
@@ -550,7 +604,9 @@ template std::vector<float> int_to_float<uint32_t, float>(std::vector<uint32_t>)
 template std::vector<float> int_to_float<int64_t, float>(std::vector<int64_t>);
 template std::vector<float> int_to_float<uint64_t, float>(std::vector<uint64_t>);
 
+#if (int32_t != int)
 template std::vector<float> int_to_float<int, float>(std::vector<int>);
+#endif
 
 template std::vector<double> int_to_float<int8_t, double>(std::vector<int8_t>);
 template std::vector<double> int_to_float<uint8_t, double>(std::vector<uint8_t>);
@@ -561,7 +617,9 @@ template std::vector<double> int_to_float<uint32_t, double>(std::vector<uint32_t
 template std::vector<double> int_to_float<int64_t, double>(std::vector<int64_t>);
 template std::vector<double> int_to_float<uint64_t, double>(std::vector<uint64_t>);
 
+#if (int32_t != int)
 template std::vector<double> int_to_float<int, double>(std::vector<int>);
+#endif
 
 template std::vector<long double> int_to_float<int8_t, long double>(std::vector<int8_t>);
 template std::vector<long double> int_to_float<uint8_t, long double>(std::vector<uint8_t>);
@@ -572,7 +630,9 @@ template std::vector<long double> int_to_float<uint32_t, long double>(std::vecto
 template std::vector<long double> int_to_float<int64_t, long double>(std::vector<int64_t>);
 template std::vector<long double> int_to_float<uint64_t, long double>(std::vector<uint64_t>);
 
+#if (int32_t != int)
 template std::vector<long double> int_to_float<int, long double>(std::vector<int>);
+#endif
 
 template void int_to_float<int8_t, float>(std::vector<float>*, std::vector<int8_t>*);
 template void int_to_float<uint8_t, float>(std::vector<float>*, std::vector<uint8_t>*);
@@ -583,7 +643,9 @@ template void int_to_float<uint32_t, float>(std::vector<float>*, std::vector<uin
 template void int_to_float<int64_t, float>(std::vector<float>*, std::vector<int64_t>*);
 template void int_to_float<uint64_t, float>(std::vector<float>*, std::vector<uint64_t>*);
 
+#if (int32_t != int)
 template void int_to_float<int, float>(std::vector<float>*, std::vector<int>*);
+#endif
 
 template void int_to_float<int8_t, double>(std::vector<double>*, std::vector<int8_t>*);
 template void int_to_float<uint8_t, double>(std::vector<double>*, std::vector<uint8_t>*);
@@ -594,7 +656,9 @@ template void int_to_float<uint32_t, double>(std::vector<double>*, std::vector<u
 template void int_to_float<int64_t, double>(std::vector<double>*, std::vector<int64_t>*);
 template void int_to_float<uint64_t, double>(std::vector<double>*, std::vector<uint64_t>*);
 
+#if (int32_t != int)
 template void int_to_float<int, double>(std::vector<double>*, std::vector<int>*);
+#endif
 
 template void int_to_float<int8_t, long double>(std::vector<long double>*, std::vector<int8_t>*);
 template void int_to_float<uint8_t, long double>(std::vector<long double>*, std::vector<uint8_t>*);
@@ -605,7 +669,9 @@ template void int_to_float<uint32_t, long double>(std::vector<long double>*, std
 template void int_to_float<int64_t, long double>(std::vector<long double>*, std::vector<int64_t>*);
 template void int_to_float<uint64_t, long double>(std::vector<long double>*, std::vector<uint64_t>*);
 
+#if (int32_t != int)
 template void int_to_float<int, long double>(std::vector<long double>*, std::vector<int>*);
+#endif
 
 template void int_to_float<int8_t, float>(std::vector<float>*, std::vector<int8_t>*, int);
 template void int_to_float<uint8_t, float>(std::vector<float>*, std::vector<uint8_t>*, int);
@@ -616,7 +682,9 @@ template void int_to_float<uint32_t, float>(std::vector<float>*, std::vector<uin
 template void int_to_float<int64_t, float>(std::vector<float>*, std::vector<int64_t>*, int);
 template void int_to_float<uint64_t, float>(std::vector<float>*, std::vector<uint64_t>*, int);
 
+#if (int32_t != int)
 template void int_to_float<int, float>(std::vector<float>*, std::vector<int>*, int);
+#endif
 
 template void int_to_float<int8_t, double>(std::vector<double>*, std::vector<int8_t>*, int);
 template void int_to_float<uint8_t, double>(std::vector<double>*, std::vector<uint8_t>*, int);
@@ -627,7 +695,9 @@ template void int_to_float<uint32_t, double>(std::vector<double>*, std::vector<u
 template void int_to_float<int64_t, double>(std::vector<double>*, std::vector<int64_t>*, int);
 template void int_to_float<uint64_t, double>(std::vector<double>*, std::vector<uint64_t>*, int);
 
+#if (int32_t != int)
 template void int_to_float<int, double>(std::vector<double>*, std::vector<int>*, int);
+#endif
 
 template void int_to_float<int8_t, long double>(std::vector<long double>*, std::vector<int8_t>*, int);
 template void int_to_float<uint8_t, long double>(std::vector<long double>*, std::vector<uint8_t>*, int);
@@ -638,6 +708,8 @@ template void int_to_float<uint32_t, long double>(std::vector<long double>*, std
 template void int_to_float<int64_t, long double>(std::vector<long double>*, std::vector<int64_t>*, int);
 template void int_to_float<uint64_t, long double>(std::vector<long double>*, std::vector<uint64_t>*, int);
 
+#if (int32_t != int)
 template void int_to_float<int, long double>(std::vector<long double>*, std::vector<int>*, int);
+#endif
 
 #endif

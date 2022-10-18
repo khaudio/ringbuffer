@@ -11,18 +11,8 @@
 #include <map>
 #include <stdexcept>
 
-
 namespace Buffer
 {
-
-template <typename T>
-class Base;
-
-template <typename T>
-class RingBuffer;
-
-template <typename T>
-class MultiRingBuffer;
 
 enum ringbuffer_err
 {
@@ -39,6 +29,15 @@ enum ringbuffer_err
     VALUE_MUST_BE_NONZERO = -80,
     NON_MULTIPLE_BYTE_COUNT = -81,
 };
+
+template <typename T>
+class Base;
+
+template <typename T>
+class RingBuffer;
+
+template <typename T>
+class MultiRingBuffer;
 
 template <typename T>
 class Base
