@@ -11,8 +11,18 @@
 #include <map>
 #include <stdexcept>
 
+
 namespace Buffer
 {
+
+template <typename T>
+class Base;
+
+template <typename T>
+class RingBuffer;
+
+template <typename T>
+class MultiRingBuffer;
 
 enum ringbuffer_err
 {
@@ -31,8 +41,13 @@ enum ringbuffer_err
 };
 
 template <typename T>
-class RingBuffer
+class Base
 {
+
+    friend class Base<T>;
+    friend class RingBuffer<T>;
+    friend class MultiRingBuffer<T>;
+
 protected:
 
     int_fast8_t _ringLength;
@@ -48,10 +63,6 @@ protected:
         _totalWritableLength,
         _totalRingSampleLength;
 
-    /* Indicator as to whether ring
-    and buffer vectors have been allocated */
-    bool _size_is_set() const;
-
 public:
 
     static constexpr const int_fast32_t bytesPerSample = sizeof(T);
@@ -61,15 +72,19 @@ public:
         writeIndex,
         processingIndex;
 
-    std::vector<std::vector<T>> ring;
+public:
 
-    RingBuffer();
-    RingBuffer(int_fast32_t bufferSize, int_fast8_t ringSize);
-    RingBuffer(const RingBuffer& obj);
+    Base();
+    Base(int_fast32_t bufferSize, int_fast8_t ringSize);
+    Base(const Base& obj);
 
-    ~RingBuffer();
+    ~Base();
 
-    /* Sets ring and buffer size and allocates vectors */
+    /* Indicator as to whether ring
+    and buffer vectors have been allocated */
+    virtual bool size_is_set() const;
+
+    /* Sets ring and buffer size */
     virtual void set_size(int_fast32_t bufferSize, int_fast8_t ringSize);
 
     /* Total number of samples that can fit in all rings */
@@ -90,20 +105,11 @@ public:
     /* Size in bytes of each buffer in the ring */
     virtual int_fast32_t bytes_per_buffer() const;
 
-    /* Fill all the buffers with value */
-    virtual void fill(T value = 0);
-
-    /* Reset all counters and indeces */
-    virtual void reset();
-
     /* Checks bounds to prevent buffer collisions */
     virtual bool is_writable() const;
 
-    /* Returns ring index for buffer at pointer */
-    virtual int_fast8_t get_ring_index(std::vector<T>* bufferPtr);
-
-    /* Returns ring index for buffer beginning at pointer */
-    virtual int_fast8_t get_ring_index(uint8_t* bufferPtr);
+    /* Reset all counters and indeces */
+    virtual void reset();
 
 /*                          Sample Counters                         */
 
@@ -170,6 +176,95 @@ public:
 
 /*                               Read                               */
 
+    /* Rotate read index
+    without changing sample counters */
+    virtual void rotate_read_index();
+
+    /* Rotates read buffer */
+    virtual void rotate_read_buffer();
+
+    /* Rotates read buffer after reading only a specified
+    number of samples instead of the entire buffer */
+    virtual void rotate_partial_read(int_fast32_t length);
+
+    /* Update counters with number of samples read externally */
+    virtual void report_read_samples(int_fast32_t length);
+
+    /* Update counters with number of bytes read externally */
+    virtual void report_read_bytes(int_fast32_t numBytes);
+
+/*                               Write                              */
+
+    /* Rotate write index
+    without changing sample counters */
+    virtual void rotate_write_index();
+
+    /* Rotates write buffer
+    and forces read buffer forward if overrun */
+    virtual void rotate_write_buffer(bool force = false);
+
+    /* Rotates write buffer after writing only a specified
+    number of samples instead of the entire buffer */
+    virtual void rotate_partial_write(int_fast32_t length, bool force = false);
+
+    /* Update counters with number of samples written externally */
+    virtual void report_written_samples(int_fast32_t length);
+
+    /* Update counters with number of bytes written externally */
+    virtual void report_written_bytes(int_fast32_t numBytes);
+
+/*                             Transform                            */
+
+    /* Rotate processing index
+    without changing sample counters */
+    virtual void rotate_processing_index();
+
+    /* Updates counters and advances
+    the processing index */
+    virtual void rotate_processing_buffer();
+
+    /* Rotates processing buffer after processing only
+    a specified number of samples instead of the entire buffer */
+    virtual void rotate_partial_processing(int_fast32_t length);
+
+    /* Update counters with number of samples processed */
+    virtual void report_processed_samples(int_fast32_t length);
+
+    /* Update counters with number of bytes processed */
+    virtual void report_processed_bytes(int_fast32_t length);
+
+};
+
+template <typename T>
+class RingBuffer : public Base<T>
+{
+
+    friend class Base<T>;
+
+public:
+
+    std::vector<std::vector<T>> ring;
+
+    RingBuffer();
+    RingBuffer(int_fast32_t bufferSize, int_fast8_t ringSize);
+    RingBuffer(const RingBuffer& obj);
+
+    ~RingBuffer();
+
+    /* Sets ring and buffer size and allocates vectors */
+    virtual void set_size(int_fast32_t bufferSize, int_fast8_t ringSize);
+
+    /* Fill all the buffers with value */
+    virtual void fill(T value = 0);
+
+    /* Returns ring index for buffer at pointer */
+    virtual int_fast8_t get_ring_index(std::vector<T>* bufferPtr);
+
+    /* Returns ring index for buffer beginning at pointer */
+    virtual int_fast8_t get_ring_index(uint8_t* bufferPtr);
+
+/*                               Read                               */
+
 protected:
 
     /* Returns current read buffer */
@@ -204,23 +299,6 @@ public:
     /* Returns pointer to byte in buffer
     at current read sample index */
     virtual uint8_t* get_read_byte();
-
-    /* Rotate read index
-    without changing sample counters */
-    virtual void rotate_read_index();
-
-    /* Rotates read buffer */
-    virtual void rotate_read_buffer();
-
-    /* Rotates read buffer after reading only a specified
-    number of samples instead of the entire buffer */
-    virtual void rotate_partial_read(int_fast32_t length);
-
-    /* Update counters with number of samples read externally */
-    virtual void report_read_samples(int_fast32_t length);
-
-    /* Update counters with number of bytes read externally */
-    virtual void report_read_bytes(int_fast32_t numBytes);
 
 /*                               Write                              */
 
@@ -267,24 +345,6 @@ public:
     at current write sample index */
     virtual uint8_t* get_write_byte();
 
-    /* Rotate write index
-    without changing sample counters */
-    virtual void rotate_write_index();
-
-    /* Rotates write buffer
-    and forces read buffer forward if overrun */
-    virtual void rotate_write_buffer(bool force = false);
-
-    /* Rotates write buffer after writing only a specified
-    number of samples instead of the entire buffer */
-    virtual void rotate_partial_write(int_fast32_t length, bool force = false);
-
-    /* Update counters with number of samples written externally */
-    virtual void report_written_samples(int_fast32_t length);
-
-    /* Update counters with number of bytes written externally */
-    virtual void report_written_bytes(int_fast32_t numBytes);
-
 /*                             Transform                            */
 
     /* Returns pointer to current processing buffer */
@@ -306,23 +366,6 @@ public:
     at current processing sample index */
     virtual uint8_t* get_processing_byte();
 
-    /* Rotate processing index
-    without changing sample counters */
-    virtual void rotate_processing_index();
-
-    /* Updates counters and advances
-    the processing index */
-    virtual void rotate_processing_buffer();
-
-    /* Rotates processing buffer after processing only
-    a specified number of samples instead of the entire buffer */
-    virtual void rotate_partial_processing(int_fast32_t length);
-
-    /* Update counters with number of samples processed */
-    virtual void report_processed_samples(int_fast32_t length);
-
-    /* Update counters with number of bytes processed */
-    virtual void report_processed_bytes(int_fast32_t length);
 };
 
 };
