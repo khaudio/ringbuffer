@@ -662,7 +662,7 @@ int_fast32_t RingBuffer<T>::write(T data, bool force)
     if (!Base<T>::size_is_set()) throw BUFFER_NOT_INITIALIZED;
     #endif
 
-    // This could be a problem with all indeces starting at 0
+    // This could be a problem with all indices starting at 0
     if (!Base<T>::is_writable() && !force) return 0;
 
     this->ring[this->writeIndex][this->_samplesWritten] = data;

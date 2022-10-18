@@ -21,7 +21,7 @@ protected:
 
 public:
 
-    /* Global indeces */
+    /* Global indices */
     std::atomic_int_fast8_t
         globalReadIndex{0},
         globalWriteIndex{0},

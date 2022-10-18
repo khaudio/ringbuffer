@@ -107,7 +107,7 @@ public:
     /* Checks bounds to prevent buffer collisions */
     virtual bool is_writable() const;
 
-    /* Reset all counters and indeces */
+    /* Reset all counters and indices */
     virtual void reset();
 
 /*                          Sample Counters                         */
