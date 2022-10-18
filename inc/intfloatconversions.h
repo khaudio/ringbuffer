@@ -223,6 +223,7 @@ constexpr void int_to_float(std::vector<F>* converted, std::vector<I>* values, i
 template float get_zero<float>();
 template double get_zero<double>();
 template long double get_zero<long double>();
+
 template int8_t get_zero<int8_t>();
 template uint8_t get_zero<uint8_t>();
 template int16_t get_zero<int16_t>();
@@ -231,6 +232,10 @@ template int32_t get_zero<int32_t>();
 template uint32_t get_zero<uint32_t>();
 template int64_t get_zero<int64_t>();
 template uint64_t get_zero<uint64_t>();
+
+#if (int32_t != int)
+template int get_zero<int>();
+#endif
 
 template float clip_float<float>(float);
 template double clip_float<double>(double);
