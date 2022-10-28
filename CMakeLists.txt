@@ -23,3 +23,28 @@ target_include_directories(multibuffer
     PUBLIC
         ${CMAKE_CURRENT_SOURCE_DIR}/inc
 )
+
+
+project(bufftest VERSION 0.1 LANGUAGES CXX)
+
+add_executable(${PROJECT_NAME}
+    src/main.cpp
+)
+
+target_include_directories(bufftest
+    PRIVATE
+        ${CMAKE_CURRENT_SOURCE_DIR}/inc
+)
+
+target_link_libraries(${PROJECT_NAME}
+    PRIVATE
+        ringbuffer
+        multibuffer
+        -lpthread
+)
+
+target_compile_definitions(${PROJECT_NAME}
+    PRIVATE
+        _DEBUG
+        RINGBUFF_AUTO_FIRST_ROTATE
+)

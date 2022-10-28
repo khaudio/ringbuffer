@@ -2,14 +2,21 @@
 #define RINGBUFFER_H
 
 #include <algorithm>
+#include <atomic>
 #include <cstdint>
 #include <cmath>
 #include <iostream>
 #include <iomanip>
 #include <limits>
+#include <memory>
 #include <vector>
 #include <map>
 #include <stdexcept>
+#include <type_traits>
+
+#ifndef RINGBUFF_AUTO_FIRST_ROTATE
+#define RINGBUFF_AUTO_FIRST_ROTATE  0
+#endif
 
 namespace Buffer
 {
@@ -17,6 +24,8 @@ namespace Buffer
 enum ringbuffer_err
 {
     RING_SIZE_TOO_SHORT = -30,
+    UNEVEN_BUFFER_LENGTH = -31,
+    NON_MULTIPLE_BUFFER_LENGTH = -32,
     BUFFER_LENGTH_TOO_LONG = -40,
     BUFFER_NOT_INITIALIZED = -50,
     BUFFER_ADDR_NOT_FOUND = -60,
@@ -28,26 +37,42 @@ enum ringbuffer_err
     PROCESSING_BUFFER_UNDERRUN = -76,
     VALUE_MUST_BE_NONZERO = -80,
     NON_MULTIPLE_BYTE_COUNT = -81,
+    BUFFER_COUNT_TOO_SHORT = -90,
+    SIZE_NOT_SET = -91,
 };
 
-template <typename T>
+template <typename T, typename I>
 class Base;
 
-template <typename T>
+template <typename T, typename I>
 class RingBuffer;
 
 template <typename T>
+class NonAtomicRingBuffer;
+
+template <typename T>
+class AtomicRingBuffer;
+
+template <typename T, typename I>
 class MultiRingBuffer;
 
 template <typename T>
+class NonAtomicMultiRingBuffer;
+
+template <typename T>
+class AtomicMultiRingBuffer;
+
+template <typename T, typename I>
 class Base
 {
 
-    friend class Base<T>;
-    friend class RingBuffer<T>;
-    friend class MultiRingBuffer<T>;
+    friend class RingBuffer<T, I>;
+    friend class MultiRingBuffer<T, I>;
 
 protected:
+
+    /* Rotate write index before first write */
+    bool _firstWritten;
 
     int_fast8_t _ringLength;
 
@@ -66,10 +91,10 @@ public:
 
     static constexpr const int_fast32_t bytesPerSample = sizeof(T);
 
-    int_fast8_t
-        readIndex,
-        writeIndex,
-        processingIndex;
+    I
+        readIndex{0},
+        writeIndex{0},
+        processingIndex{0};
 
 public:
 
@@ -204,7 +229,10 @@ public:
 
     /* Rotates write buffer after writing only a specified
     number of samples instead of the entire buffer */
-    virtual void rotate_partial_write(int_fast32_t length, bool force = false);
+    virtual void rotate_partial_write(
+            int_fast32_t length,
+            bool force = false
+        );
 
     /* Update counters with number of samples written externally */
     virtual void report_written_samples(int_fast32_t length);
@@ -234,11 +262,10 @@ public:
 
 };
 
-template <typename T>
-class RingBuffer : public Base<T>
+template <typename T, typename I>
+class RingBuffer :
+public Base<T, I>
 {
-
-    friend class Base<T>;
 
 public:
 
@@ -303,14 +330,16 @@ public:
 
 public:
 
-    /* Write a single sample */
+    /* Writes a single sample.
+    If forced, unread data will be overwritten. */
     virtual int_fast32_t write(T data, bool force = false);
 
     /* Writes along ring and returns total number of samples written.
     If forced, unread data will be overwritten. */
     virtual int_fast32_t write(std::vector<T> data, bool force = false);
 
-    /* Write specified number of samples */
+    /* Writes specified number of samples.
+    If forced, unread data will be overwritten. */
     virtual int_fast32_t write_samples(
             T* data,
             int_fast32_t length,
@@ -364,6 +393,34 @@ public:
     /* Returns pointer to byte in buffer
     at current processing sample index */
     virtual uint8_t* get_processing_byte();
+
+};
+
+template <typename T>
+class NonAtomicRingBuffer :
+public RingBuffer<T, int_fast8_t>
+{
+public:
+
+    NonAtomicRingBuffer();
+    NonAtomicRingBuffer(int_fast32_t bufferSize, int_fast8_t ringSize);
+    NonAtomicRingBuffer(const NonAtomicRingBuffer& obj);
+
+    ~NonAtomicRingBuffer();
+
+};
+
+template <typename T>
+class AtomicRingBuffer :
+public RingBuffer<T, std::atomic_int_fast8_t>
+{
+public:
+
+    AtomicRingBuffer();
+    AtomicRingBuffer(int_fast32_t bufferSize, int_fast8_t ringSize);
+    AtomicRingBuffer(const AtomicRingBuffer& obj);
+    
+    ~AtomicRingBuffer();
 
 };
 

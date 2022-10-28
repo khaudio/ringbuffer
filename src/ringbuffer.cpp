@@ -3,8 +3,9 @@
 using namespace Buffer;
 
 
-template <typename T>
-Base<T>::Base() :
+template <typename T, typename I>
+Base<T, I>::Base() :
+_firstWritten(false),
 _ringLength(0),
 _buffered(0),
 _samplesWritten(0),
@@ -14,65 +15,80 @@ _samplesUnread(0),
 _bufferLength(0),
 _bytesPerBuffer(0),
 _totalWritableLength(0),
-_totalRingSampleLength(0),
-readIndex(0),
-writeIndex(0),
-processingIndex(0)
+_totalRingSampleLength(0)
 {
 }
 
-template <typename T>
-Base<T>::Base(int_fast32_t bufferSize, int_fast8_t ringSize)
+template <typename T, typename I>
+Base<T, I>::Base(int_fast32_t bufferSize, int_fast8_t ringSize)
 {
     set_size(bufferSize, ringSize);
 }
 
-template <typename T>
-Base<T>::Base(const Base& obj) :
-_ringLength(obj._ringLength),
-_buffered(obj._buffered),
-_samplesWritten(obj._samplesWritten),
-_samplesUnwritten(obj._samplesUnwritten),
-_samplesProcessed(obj._samplesProcessed),
-_samplesUnread(obj._samplesUnread),
-_bufferLength(obj._bufferLength),
-_bytesPerBuffer(obj._bytesPerBuffer),
-_totalWritableLength(obj._totalWritableLength),
-_totalRingSampleLength(obj._totalRingSampleLength),
-readIndex(obj.readIndex),
-writeIndex(obj.writeIndex),
-processingIndex(obj.processingIndex)
+template <typename T, typename I>
+Base<T, I>::Base(const Base& obj)
+{
+    /* make a simple copy constructor; i.e., assign values,
+    not set_size() because running copy const when pushing
+    into a vector is triggering error checking before size
+    can be properly set.  default constructor is being used
+    to initialize but not set anything */
+    
+    set_size(obj.buffer_length(), obj.ring_length());
+    
+    int_fast8_t readidx = obj.readIndex;
+    this->readIndex = readidx;
+    int_fast8_t writeidx = obj.writeIndex;
+    this->writeIndex = writeidx;
+    int_fast8_t procidx = obj.processingIndex;
+    this->processingIndex = procidx;
+    
+    this->_firstWritten = obj._firstWritten;
+    this->_buffered = obj._buffered;
+    this->_samplesWritten = obj._samplesWritten;
+    this->_samplesUnwritten = obj._samplesUnwritten;
+    this->_samplesProcessed = obj._samplesProcessed;
+    this->_samplesUnread = obj._samplesUnread;
+}
+
+template <typename T, typename I>
+Base<T, I>::~Base()
 {
 }
 
-template <typename T>
-Base<T>::~Base()
-{
-}
-
-template <typename T>
-inline bool Base<T>::size_is_set() const
+template <typename T, typename I>
+inline bool Base<T, I>::size_is_set() const
 {
     return ((this->_bufferLength > 0) && (this->_ringLength > 0));
 }
 
-template <typename T>
-void Base<T>::set_size(int_fast32_t bufferSize, int_fast8_t ringSize)
+template <typename T, typename I>
+void Base<T, I>::set_size(int_fast32_t bufferSize, int_fast8_t ringSize)
 {
+    std::cout << "\tRunning base set_size\n";
     #ifdef _DEBUG
     /* There must be multiple buffers to rotate */
     if (ringSize < 2) throw RING_SIZE_TOO_SHORT;
 
-    /* Assert that total ring sample length is less than datatype max */
+    /* Assert that total ring size in bytes
+    is less than datatype max */
     if (bufferSize > (
             std::numeric_limits<int_fast32_t>::max()
             / static_cast<int_fast32_t>(ringSize)
+            / bytesPerSample
         ))
     {
         throw BUFFER_LENGTH_TOO_LONG;
     }
+
+    /* Buffer length must be an even number */
+    if (bufferSize % 2) throw UNEVEN_BUFFER_LENGTH;
+    
+    /* Buffer length must be divisible by ring length */
+    if (bufferSize % ringSize) throw NON_MULTIPLE_BUFFER_LENGTH;
     #endif
 
+    this->_firstWritten = false;
     this->_ringLength = ringSize;
     this->_bufferLength = bufferSize;
     this->_totalRingSampleLength = this->_ringLength * this->_bufferLength;
@@ -85,181 +101,172 @@ void Base<T>::set_size(int_fast32_t bufferSize, int_fast8_t ringSize)
     this->_samplesWritten = 0;
     this->_samplesUnread = this->_bufferLength;
     this->_buffered = 0;
-    this->readIndex = 0;
+    this->readIndex = this->_ringLength - 1;
     this->writeIndex = 0;
     this->processingIndex = 0;
+    std::cout << "\tBase set_size done\n";
 }
 
-template <typename T>
-int_fast32_t Base<T>::size() const
+template <typename T, typename I>
+int_fast32_t Base<T, I>::size() const
 {
     return this->_totalRingSampleLength;
 }
 
-template <typename T>
-int_fast32_t Base<T>::total_size() const
+template <typename T, typename I>
+int_fast32_t Base<T, I>::total_size() const
 {
     return this->_totalRingSampleLength * bytesPerSample;
 }
 
-template <typename T>
-int_fast8_t Base<T>::ring_length() const
+template <typename T, typename I>
+int_fast8_t Base<T, I>::ring_length() const
 {
     return this->_ringLength;
 }
 
-template <typename T>
-int_fast32_t Base<T>::buffer_length() const
+template <typename T, typename I>
+int_fast32_t Base<T, I>::buffer_length() const
 {
     return this->_bufferLength;
 }
 
-template <typename T>
-int_fast32_t Base<T>::bytes_per_sample() const
+template <typename T, typename I>
+int_fast32_t Base<T, I>::bytes_per_sample() const
 {
     return bytesPerSample;
 }
 
-template <typename T>
-int_fast32_t Base<T>::bytes_per_buffer() const
+template <typename T, typename I>
+int_fast32_t Base<T, I>::bytes_per_buffer() const
 {
     return this->_bytesPerBuffer;
 }
 
-template <typename T>
-void Base<T>::reset()
+template <typename T, typename I>
+void Base<T, I>::reset()
 {
+    this->_firstWritten = false;
     this->_buffered = 0;
     this->_samplesUnread = this->_bufferLength;
     this->_samplesUnwritten = this->_bufferLength;
     this->_samplesProcessed = 0;
     this->_samplesWritten = 0;
-    this->readIndex = 0;
+    this->readIndex = this->_ringLength - 1;
     this->writeIndex = 0;
     this->processingIndex = 0;
 }
 
-template <typename T>
-bool Base<T>::is_writable() const
+template <typename T, typename I>
+bool Base<T, I>::is_writable() const
 {
     #ifdef _DEBUG
     if (!size_is_set()) throw BUFFER_NOT_INITIALIZED;
     #endif
 
     // is (available() > 0) in this function redundant?
+    
     return (this->readIndex != this->writeIndex) && (available() > 0);
 }
 
-template <typename T>
-int_fast32_t Base<T>::buffered() const
+template <typename T, typename I>
+inline int_fast32_t Base<T, I>::buffered() const
 {
     return this->_buffered;
 }
 
-template <typename T>
-int_fast32_t Base<T>::bytes_buffered() const
+template <typename T, typename I>
+inline int_fast32_t Base<T, I>::bytes_buffered() const
 {
-    return this->_buffered * bytesPerSample;
+    return buffered() * bytesPerSample;
 }
 
-template <typename T>
-int_fast32_t Base<T>::available() const
+template <typename T, typename I>
+inline int_fast32_t Base<T, I>::available() const
 {
-    return this->_totalWritableLength - this->_buffered;
+    return this->_totalWritableLength - buffered();
 }
 
-template <typename T>
-int_fast32_t Base<T>::bytes_available() const
+template <typename T, typename I>
+inline int_fast32_t Base<T, I>::bytes_available() const
 {
-    return (
-            (this->_totalWritableLength - this->_buffered)
-            * bytesPerSample
-        );
+    return available() * bytesPerSample;
 }
 
-template <typename T>
-int_fast32_t Base<T>::processed() const
+template <typename T, typename I>
+inline int_fast32_t Base<T, I>::processed() const
 {
     return this->_samplesProcessed;
 }
 
-template <typename T>
-int_fast32_t Base<T>::bytes_processed() const
+template <typename T, typename I>
+inline int_fast32_t Base<T, I>::bytes_processed() const
 {
-    return this->_samplesProcessed * bytesPerSample;
+    return processed() * bytesPerSample;
 }
 
-template <typename T>
-int_fast32_t Base<T>::unprocessed() const
+template <typename T, typename I>
+inline int_fast32_t Base<T, I>::unprocessed() const
 {
-    return this->_buffered - this->_samplesProcessed;
+    return buffered() - this->_samplesProcessed;
 }
 
-template <typename T>
-int_fast32_t Base<T>::bytes_unprocessed() const
+template <typename T, typename I>
+inline int_fast32_t Base<T, I>::bytes_unprocessed() const
 {
-    return (
-            (this->_buffered - this->_samplesProcessed)
-            * bytesPerSample
-        );
+    return unprocessed() * bytesPerSample;
 }
 
-template <typename T>
-int_fast32_t Base<T>::unread() const
+template <typename T, typename I>
+inline int_fast32_t Base<T, I>::unread() const
 {
     return (buffered() ? this->_samplesUnread : 0);
 }
 
-template <typename T>
-int_fast32_t Base<T>::bytes_unread() const
+template <typename T, typename I>
+inline int_fast32_t Base<T, I>::bytes_unread() const
 {
-    return (
-            (buffered() ? this->_samplesUnread : 0)
-            * bytesPerSample
-        );
+    return unread() * bytesPerSample;
 }
 
-template <typename T>
-int_fast32_t Base<T>::unwritten() const
+template <typename T, typename I>
+inline int_fast32_t Base<T, I>::unwritten() const
 {
     return (available() ? this->_samplesUnwritten : 0);
 }
 
-template <typename T>
-int_fast32_t Base<T>::bytes_unwritten() const
+template <typename T, typename I>
+inline int_fast32_t Base<T, I>::bytes_unwritten() const
 {
-    return (
-            (available() ? this->_samplesUnwritten : 0)
-            * bytesPerSample
-        );
+    return unwritten() * bytesPerSample;
 }
 
-template <typename T>
-int_fast32_t Base<T>::buffers_buffered() const
+template <typename T, typename I>
+inline int_fast32_t Base<T, I>::buffers_buffered() const
 {
-    return (this->_buffered / this->_bufferLength);
+    return (buffered() / this->_bufferLength);
 }
 
-template <typename T>
-int_fast32_t Base<T>::buffers_available() const
+template <typename T, typename I>
+inline int_fast32_t Base<T, I>::buffers_available() const
 {
     return (available() / this->_bufferLength);
 }
 
-template <typename T>
-int_fast32_t Base<T>::buffers_processed() const
+template <typename T, typename I>
+inline int_fast32_t Base<T, I>::buffers_processed() const
 {
-    return (this->_samplesProcessed / this->_bufferLength);
+    return (processed() / this->_bufferLength);
 }
 
-template <typename T>
-inline void Base<T>::rotate_read_index()
+template <typename T, typename I>
+inline void Base<T, I>::rotate_read_index()
 {
-    ++this->readIndex %= this->_ringLength;
+    this->readIndex = ++this->readIndex % this->_ringLength;
 }
 
-template <typename T>
-void Base<T>::rotate_read_buffer()
+template <typename T, typename I>
+void Base<T, I>::rotate_read_buffer()
 {
     rotate_read_index();
     this->_samplesUnread = this->_bufferLength;
@@ -272,8 +279,8 @@ void Base<T>::rotate_read_buffer()
         );
 }
 
-template <typename T>
-void Base<T>::rotate_partial_read(int_fast32_t length)
+template <typename T, typename I>
+void Base<T, I>::rotate_partial_read(int_fast32_t length)
 {
     #ifdef _DEBUG
     if (length > this->_bufferLength)
@@ -286,19 +293,15 @@ void Base<T>::rotate_partial_read(int_fast32_t length)
     this->_buffered -= length;
     this->_samplesUnread = this->_bufferLength;
     this->_samplesProcessed -= length;
-
-    /* Only clip negative integers if Debug is enabled */
-    #ifdef _DEBUG
     this->_buffered = (this->_buffered < 0) ? 0 : this->_buffered;
     this->_samplesProcessed = (
             (this->_samplesProcessed < 0)
             ? 0 : this->_samplesProcessed
         );
-    #endif
 }
 
-template <typename T>
-inline void Base<T>::report_read_samples(int_fast32_t length)
+template <typename T, typename I>
+inline void Base<T, I>::report_read_samples(int_fast32_t length)
 {
     #ifdef _DEBUG
     if (length > this->_samplesUnread)
@@ -316,8 +319,8 @@ inline void Base<T>::report_read_samples(int_fast32_t length)
     }
 }
 
-template <typename T>
-inline void Base<T>::report_read_bytes(int_fast32_t numBytes)
+template <typename T, typename I>
+inline void Base<T, I>::report_read_bytes(int_fast32_t numBytes)
 {
     #ifdef _DEBUG
     if (numBytes % bytesPerSample) throw NON_MULTIPLE_BYTE_COUNT;
@@ -326,27 +329,35 @@ inline void Base<T>::report_read_bytes(int_fast32_t numBytes)
     report_read_samples(numBytes / bytesPerSample);
 }
 
-template <typename T>
-inline void Base<T>::rotate_write_index()
+template <typename T, typename I>
+inline void Base<T, I>::rotate_write_index()
 {
-    ++this->writeIndex %= this->_ringLength;
+    this->writeIndex = ++this->writeIndex % this->_ringLength;
+
+    #ifdef RINGBUFF_AUTO_FIRST_ROTATE
+    if (!this->_firstWritten)
+    {
+        this->_firstWritten = true;
+        rotate_read_index();
+    }
+    #endif
 }
 
-template <typename T>
-void Base<T>::rotate_write_buffer(bool force)
+template <typename T, typename I>
+void Base<T, I>::rotate_write_buffer(bool force)
 {
     rotate_write_index();
     this->_samplesWritten = 0;
     this->_samplesUnwritten = this->_bufferLength;
     this->_buffered += this->_bufferLength;
-    if (force && !is_writable())
+    /* if (force && !is_writable())
     {
-        rotate_read_buffer();
-    }
+        rotate_read_index();
+    } */
 }
 
-template <typename T>
-void Base<T>::rotate_partial_write(int_fast32_t length, bool force)
+template <typename T, typename I>
+void Base<T, I>::rotate_partial_write(int_fast32_t length, bool force)
 {
     #ifdef _DEBUG
     if (length > this->_bufferLength)
@@ -363,14 +374,14 @@ void Base<T>::rotate_partial_write(int_fast32_t length, bool force)
             (this->_buffered > this->_totalWritableLength)
             ? this->_totalWritableLength : this->_buffered
         );
-    if (force && !is_writable())
+    /* if (force && !is_writable())
     {
-        rotate_read_buffer();
-    }
+        rotate_read_index();
+    } */
 }
 
-template <typename T>
-inline void Base<T>::report_written_samples(int_fast32_t length)
+template <typename T, typename I>
+inline void Base<T, I>::report_written_samples(int_fast32_t length)
 {
     #ifdef _DEBUG
     if (length > this->_samplesUnwritten)
@@ -378,6 +389,10 @@ inline void Base<T>::report_written_samples(int_fast32_t length)
         std::cerr << "Length must be <= unwritten samples\n";
         std::cerr << "Samples unwritten: " << this->_samplesUnwritten << '\n';
         throw std::out_of_range("Length must be <= unwritten samples");
+    }
+    else if (length <= 0)
+    {
+        throw std::out_of_range("Length must be > 0");
     }
     #endif
 
@@ -389,8 +404,8 @@ inline void Base<T>::report_written_samples(int_fast32_t length)
     }
 }
 
-template <typename T>
-inline void Base<T>::report_written_bytes(int_fast32_t numBytes)
+template <typename T, typename I>
+inline void Base<T, I>::report_written_bytes(int_fast32_t numBytes)
 {
     #ifdef _DEBUG
     if (numBytes % bytesPerSample) throw NON_MULTIPLE_BYTE_COUNT;
@@ -399,21 +414,23 @@ inline void Base<T>::report_written_bytes(int_fast32_t numBytes)
     report_written_samples(numBytes / bytesPerSample);
 }
 
-template <typename T>
-inline void Base<T>::rotate_processing_index()
+template <typename T, typename I>
+inline void Base<T, I>::rotate_processing_index()
 {
-    ++this->processingIndex %= this->_ringLength;
+    std::cout << "Rotating processing index\n";
+    
+    this->processingIndex = ++this->processingIndex % this->_ringLength;
 }
 
-template <typename T>
-void Base<T>::rotate_processing_buffer()
+template <typename T, typename I>
+void Base<T, I>::rotate_processing_buffer()
 {
     rotate_processing_index();
     this->_samplesProcessed += this->_bufferLength;
 }
 
-template <typename T>
-void Base<T>::rotate_partial_processing(int_fast32_t length)
+template <typename T, typename I>
+void Base<T, I>::rotate_partial_processing(int_fast32_t length)
 {
     #ifdef _DEBUG
     if (length > this->_bufferLength)
@@ -430,8 +447,8 @@ void Base<T>::rotate_partial_processing(int_fast32_t length)
     );
 }
 
-template <typename T>
-inline void Base<T>::report_processed_samples(int_fast32_t length)
+template <typename T, typename I>
+inline void Base<T, I>::report_processed_samples(int_fast32_t length)
 {
     #ifdef _DEBUG
     if (length > unprocessed())
@@ -459,8 +476,8 @@ inline void Base<T>::report_processed_samples(int_fast32_t length)
     }
 }
 
-template <typename T>
-inline void Base<T>::report_processed_bytes(int_fast32_t numBytes)
+template <typename T, typename I>
+inline void Base<T, I>::report_processed_bytes(int_fast32_t numBytes)
 {
     #ifdef _DEBUG
     if (numBytes % bytesPerSample) throw NON_MULTIPLE_BYTE_COUNT;
@@ -469,33 +486,49 @@ inline void Base<T>::report_processed_bytes(int_fast32_t numBytes)
     report_processed_samples(numBytes / bytesPerSample);
 }
 
-template <typename T>
-RingBuffer<T>::RingBuffer() :
-Base<T>()
+template <typename T, typename I>
+RingBuffer<T, I>::RingBuffer() :
+Base<T, I>()
 {
 }
 
-template <typename T>
-RingBuffer<T>::RingBuffer(int_fast32_t bufferSize, int_fast8_t ringSize)
+template <typename T, typename I>
+RingBuffer<T, I>::RingBuffer(int_fast32_t bufferSize, int_fast8_t ringSize)
 {
     set_size(bufferSize, ringSize);
 }
 
-template <typename T>
-RingBuffer<T>::RingBuffer(const RingBuffer& obj) :
-Base<T>(obj)
+template <typename T, typename I>
+RingBuffer<T, I>::RingBuffer(const RingBuffer& obj) :
+Base<T, I>(obj)
+{
+    std::cout << "\tRunning ringbuff @ " << this << " copy const\n";
+    
+    set_size(obj.buffer_length(), obj.ring_length());
+    
+    for (int_fast8_t i(0); i < this->_ringLength; ++i)
+    {
+        std::copy(
+                obj.ring.at(i).begin(),
+                obj.ring.at(i).end(),
+                this->ring.at(i).begin()
+            );
+    }
+
+    std::cout << "\tRingbuff @ " << this << " copy const done\n";
+}
+
+template <typename T, typename I>
+RingBuffer<T, I>::~RingBuffer()
 {
 }
 
-template <typename T>
-RingBuffer<T>::~RingBuffer()
+template <typename T, typename I>
+void RingBuffer<T, I>::set_size(int_fast32_t bufferSize, int_fast8_t ringSize)
 {
-}
-
-template <typename T>
-void RingBuffer<T>::set_size(int_fast32_t bufferSize, int_fast8_t ringSize)
-{
-    Base<T>::set_size(bufferSize, ringSize);
+    std::cout << "\tRunning ringbuff set_size\n";
+    
+    Base<T, I>::set_size(bufferSize, ringSize);
     this->ring = std::vector<std::vector<T>>();
     for (int_fast8_t i(0); i < this->_ringLength; ++i)
     {
@@ -506,10 +539,11 @@ void RingBuffer<T>::set_size(int_fast32_t bufferSize, int_fast8_t ringSize)
             this->ring[i].emplace_back(T(0));
         }
     }
+    std::cout << "\tRingbuff set_size done\n";
 }
 
-template <typename T>
-void RingBuffer<T>::fill(T value)
+template <typename T, typename I>
+void RingBuffer<T, I>::fill(T value)
 {
     for (int_fast32_t i(0); i < this->_bufferLength; ++i)
     {
@@ -525,11 +559,11 @@ void RingBuffer<T>::fill(T value)
     }
 }
 
-template <typename T>
-inline int_fast8_t RingBuffer<T>::get_ring_index(std::vector<T>* bufferPtr)
+template <typename T, typename I>
+inline int_fast8_t RingBuffer<T, I>::get_ring_index(std::vector<T>* bufferPtr)
 {
     #ifdef _DEBUG
-    if (!size_is_set()) throw BUFFER_NOT_INITIALIZED;
+    if (!Base<T, I>::size_is_set()) throw BUFFER_NOT_INITIALIZED;
     #endif
 
     for (uint8_t i(0); i < this->_ringLength; ++i)
@@ -547,11 +581,11 @@ inline int_fast8_t RingBuffer<T>::get_ring_index(std::vector<T>* bufferPtr)
     return BUFFER_ADDR_NOT_FOUND;
 }
 
-template <typename T>
-inline int_fast8_t RingBuffer<T>::get_ring_index(uint8_t* bufferPtr)
+template <typename T, typename I>
+inline int_fast8_t RingBuffer<T, I>::get_ring_index(uint8_t* bufferPtr)
 {
     #ifdef _DEBUG
-    if (!size_is_set()) throw BUFFER_NOT_INITIALIZED;
+    if (!Base<T, I>::size_is_set()) throw BUFFER_NOT_INITIALIZED;
     #endif
 
     for (uint8_t i(0); i < this->_ringLength; ++i)
@@ -569,30 +603,30 @@ inline int_fast8_t RingBuffer<T>::get_ring_index(uint8_t* bufferPtr)
     return BUFFER_ADDR_NOT_FOUND;
 }
 
-template <typename T>
-inline std::vector<T> RingBuffer<T>::_read()
+template <typename T, typename I>
+inline std::vector<T> RingBuffer<T, I>::_read()
 {
     return this->ring[this->readIndex];
 }
 
-template <typename T>
-std::vector<T> RingBuffer<T>::read()
+template <typename T, typename I>
+std::vector<T> RingBuffer<T, I>::read()
 {
     #ifdef _DEBUG
-    if (!Base<T>::size_is_set()) throw BUFFER_NOT_INITIALIZED;
-    if (!buffers_buffered()) throw READ_BUFFER_UNDERRUN;
+    if (!Base<T, I>::size_is_set()) throw BUFFER_NOT_INITIALIZED;
+    if (!Base<T, I>::buffers_buffered()) throw READ_BUFFER_UNDERRUN;
     #endif
 
     std::vector<T> output(_read());
-    Base<T>::rotate_read_buffer();
+    Base<T, I>::rotate_read_buffer();
     return output;
 }
 
-template <typename T>
-void RingBuffer<T>::read_samples(T* data, int_fast32_t length)
+template <typename T, typename I>
+void RingBuffer<T, I>::read_samples(T* data, int_fast32_t length)
 {
     #ifdef _DEBUG
-    if (!Base<T>::size_is_set()) throw BUFFER_NOT_INITIALIZED;
+    if (!Base<T, I>::size_is_set()) throw BUFFER_NOT_INITIALIZED;
     if (!length) throw VALUE_MUST_BE_NONZERO;
     if (length > this->_samplesUnread)
     {
@@ -601,14 +635,14 @@ void RingBuffer<T>::read_samples(T* data, int_fast32_t length)
     #endif
 
     std::copy(get_read_sample(), get_read_sample() + length, data);
-    Base<T>::report_read_samples(length);
+    Base<T, I>::report_read_samples(length);
 }
 
-template <typename T>
-void RingBuffer<T>::read_bytes(uint8_t* data, int_fast32_t numBytes)
+template <typename T, typename I>
+void RingBuffer<T, I>::read_bytes(uint8_t* data, int_fast32_t numBytes)
 {
     #ifdef _DEBUG
-    if (numBytes % Base<T>::bytesPerSample)
+    if (numBytes % Base<T, I>::bytesPerSample)
     {
         throw NON_MULTIPLE_BYTE_COUNT;
     }
@@ -616,32 +650,32 @@ void RingBuffer<T>::read_bytes(uint8_t* data, int_fast32_t numBytes)
 
     read_samples(
             reinterpret_cast<T*>(data),
-            numBytes / Base<T>::bytesPerSample
+            numBytes / Base<T, I>::bytesPerSample
         );
 }
 
-template <typename T>
-inline std::vector<T>* RingBuffer<T>::get_read_buffer()
+template <typename T, typename I>
+inline std::vector<T>* RingBuffer<T, I>::get_read_buffer()
 {
     return &(this->ring[this->readIndex]);
 }
 
-template <typename T>
-inline T* RingBuffer<T>::get_read_buffer_sample()
+template <typename T, typename I>
+inline T* RingBuffer<T, I>::get_read_buffer_sample()
 {
     return &(this->ring[this->readIndex][0]);
 }
 
-template <typename T>
-inline uint8_t* RingBuffer<T>::get_read_buffer_byte()
+template <typename T, typename I>
+inline uint8_t* RingBuffer<T, I>::get_read_buffer_byte()
 {
     return reinterpret_cast<uint8_t*>(
             &(this->ring[this->readIndex][0])
         );
 }
 
-template <typename T>
-inline T* RingBuffer<T>::get_read_sample()
+template <typename T, typename I>
+inline T* RingBuffer<T, I>::get_read_sample()
 {
     return &(this->ring[this->readIndex][
             this->_bufferLength
@@ -649,21 +683,20 @@ inline T* RingBuffer<T>::get_read_sample()
         ]);
 }
 
-template <typename T>
-inline uint8_t* RingBuffer<T>::get_read_byte()
+template <typename T, typename I>
+inline uint8_t* RingBuffer<T, I>::get_read_byte()
 {
     return reinterpret_cast<uint8_t*>(get_read_sample());
 }
 
-template <typename T>
-int_fast32_t RingBuffer<T>::write(T data, bool force)
+template <typename T, typename I>
+int_fast32_t RingBuffer<T, I>::write(T data, bool force)
 {
     #ifdef _DEBUG
-    if (!Base<T>::size_is_set()) throw BUFFER_NOT_INITIALIZED;
+    if (!Base<T, I>::size_is_set()) throw BUFFER_NOT_INITIALIZED;
     #endif
 
-    // This could be a problem with all indices starting at 0
-    if (!Base<T>::is_writable() && !force) return 0;
+    if (!Base<T, I>::is_writable() && !force) return 0;
 
     this->ring[this->writeIndex][this->_samplesWritten] = data;
     ++this->_samplesWritten;
@@ -671,7 +704,7 @@ int_fast32_t RingBuffer<T>::write(T data, bool force)
     #ifdef _DEBUG
     if (--this->_samplesUnwritten <= 0)
     {
-        Base<T>::rotate_write_buffer(force);
+        Base<T, I>::rotate_write_buffer(force);
     }
     #endif
 
@@ -679,14 +712,19 @@ int_fast32_t RingBuffer<T>::write(T data, bool force)
     return 1;
 }
 
-template <typename T>
-int_fast32_t RingBuffer<T>::write(std::vector<T> data, bool force)
+template <typename T, typename I>
+int_fast32_t RingBuffer<T, I>::write(std::vector<T> data, bool force)
 {
+    #ifdef _DEBUG
+    if (!Base<T, I>::size_is_set()) throw BUFFER_NOT_INITIALIZED;
+    #endif
+    
     int_fast32_t written(0), remaining(static_cast<int_fast32_t>(data.size()));
     int_fast8_t index(this->_ringLength);
+
     while (
             (remaining > 0)
-            && (Base<T>::is_writable() || force)
+            && (Base<T, I>::is_writable() || force)
             && (index-- > 0)
         )
     {
@@ -699,14 +737,18 @@ int_fast32_t RingBuffer<T>::write(std::vector<T> data, bool force)
                 );
             written += this->_samplesUnwritten;
             remaining -= this->_samplesUnwritten;
-            Base<T>::rotate_write_buffer(force);
+            Base<T, I>::rotate_write_buffer(force);
         }
         else
         {
             std::copy(
                     data.begin() + written,
                     data.end(),
+                    #ifdef _DEBUG
+                    this->ring.at(this->writeIndex).begin() + this->_samplesWritten
+                    #else
                     this->ring[this->writeIndex].begin() + this->_samplesWritten
+                    #endif
                 );
             this->_samplesWritten += remaining;
             this->_samplesUnwritten -= remaining;
@@ -714,21 +756,21 @@ int_fast32_t RingBuffer<T>::write(std::vector<T> data, bool force)
             remaining = 0;
             if (this->_samplesUnwritten <= 0)
             {
-                Base<T>::rotate_write_buffer(force);
+                Base<T, I>::rotate_write_buffer(force);
             }
         }
     }
     return written;
 }
 
-template <typename T>
-int_fast32_t RingBuffer<T>::write_samples(T* data, int_fast32_t length, bool force)
+template <typename T, typename I>
+int_fast32_t RingBuffer<T, I>::write_samples(T* data, int_fast32_t length, bool force)
 {
     return write(std::vector<T>(data, data + length), force);
 }
 
-template <typename T>
-int_fast32_t RingBuffer<T>::write_bytes(
+template <typename T, typename I>
+int_fast32_t RingBuffer<T, I>::write_bytes(
         uint8_t* data,
         int_fast32_t numBytes,
         bool force
@@ -737,29 +779,29 @@ int_fast32_t RingBuffer<T>::write_bytes(
     return write(std::vector<T>(
             reinterpret_cast<T*>(data),
             reinterpret_cast<T*>(data + numBytes)
-        ), force) * Base<T>::bytesPerSample;
+        ), force) * Base<T, I>::bytesPerSample;
 }
 
-template <typename T>
-inline std::vector<T>* RingBuffer<T>::get_write_buffer()
+template <typename T, typename I>
+inline std::vector<T>* RingBuffer<T, I>::get_write_buffer()
 {
     return &(this->ring[this->writeIndex]);
 }
 
-template <typename T>
-inline T* RingBuffer<T>::get_write_buffer_sample()
+template <typename T, typename I>
+inline T* RingBuffer<T, I>::get_write_buffer_sample()
 {
     return &(this->ring[this->writeIndex][0]);
 }
 
-template <typename T>
-inline uint8_t* RingBuffer<T>::get_write_buffer_byte()
+template <typename T, typename I>
+inline uint8_t* RingBuffer<T, I>::get_write_buffer_byte()
 {
     return reinterpret_cast<uint8_t*>(get_write_buffer_sample());
 }
 
-template <typename T>
-T* RingBuffer<T>::get_write_sample()
+template <typename T, typename I>
+T* RingBuffer<T, I>::get_write_sample()
 {
     return &(this->ring[this->writeIndex][
             this->_bufferLength
@@ -767,46 +809,133 @@ T* RingBuffer<T>::get_write_sample()
         ]);
 }
 
-template <typename T>
-uint8_t* RingBuffer<T>::get_write_byte()
+template <typename T, typename I>
+uint8_t* RingBuffer<T, I>::get_write_byte()
 {
     return reinterpret_cast<uint8_t*>(get_write_sample());
 }
 
-template <typename T>
-std::vector<T>* RingBuffer<T>::get_processing_buffer()
+template <typename T, typename I>
+std::vector<T>* RingBuffer<T, I>::get_processing_buffer()
 {
     return &(this->ring[this->processingIndex]);
 }
 
-template <typename T>
-inline T* RingBuffer<T>::get_processing_buffer_sample()
+template <typename T, typename I>
+inline T* RingBuffer<T, I>::get_processing_buffer_sample()
 {
     return &(this->ring[this->processingIndex][0]);
 }
 
-template <typename T>
-uint8_t* RingBuffer<T>::get_processing_buffer_byte()
+template <typename T, typename I>
+uint8_t* RingBuffer<T, I>::get_processing_buffer_byte()
 {
     return reinterpret_cast<uint8_t*>(
             &(this->ring[this->processingIndex][0])
         );
 }
 
-template <typename T>
-T* RingBuffer<T>::get_processing_sample()
+template <typename T, typename I>
+T* RingBuffer<T, I>::get_processing_sample()
 {
     return &(this->ring[this->processingIndex][this->_samplesProcessed]);
 }
 
-template <typename T>
-uint8_t* RingBuffer<T>::get_processing_byte()
+template <typename T, typename I>
+uint8_t* RingBuffer<T, I>::get_processing_byte()
 {
     return reinterpret_cast<uint8_t*>(get_processing_sample());
 }
 
-template class Buffer::RingBuffer<int8_t>;
-template class Buffer::RingBuffer<uint8_t>;
+template <typename T>
+NonAtomicRingBuffer<T>::NonAtomicRingBuffer() :
+RingBuffer<T, int_fast8_t>()
+{
+}
+
+template <typename T>
+NonAtomicRingBuffer<T>::NonAtomicRingBuffer(int_fast32_t bufferSize, int_fast8_t ringSize) :
+RingBuffer<T, int_fast8_t>(bufferSize, ringSize)
+{
+}
+
+template <typename T>
+NonAtomicRingBuffer<T>::NonAtomicRingBuffer(const NonAtomicRingBuffer& obj) :
+RingBuffer<T, int_fast8_t>(obj)
+{
+}
+
+template <typename T>
+NonAtomicRingBuffer<T>::~NonAtomicRingBuffer()
+{
+}
+
+template <typename T>
+AtomicRingBuffer<T>::AtomicRingBuffer() :
+RingBuffer<T, std::atomic_int_fast8_t>()
+{
+}
+
+template <typename T>
+AtomicRingBuffer<T>::AtomicRingBuffer(int_fast32_t bufferSize, int_fast8_t ringSize) :
+RingBuffer<T, std::atomic_int_fast8_t>(bufferSize, ringSize)
+{
+}
+
+template <typename T>
+AtomicRingBuffer<T>::AtomicRingBuffer(const AtomicRingBuffer& obj) :
+RingBuffer<T, std::atomic_int_fast8_t>(obj)
+{
+}
+
+template <typename T>
+AtomicRingBuffer<T>::~AtomicRingBuffer()
+{
+}
+
+template class Buffer::Base<int8_t, int_fast8_t>;
+template class Buffer::Base<int8_t, std::atomic_int_fast8_t>;
+
+/* template class Buffer::Base<uint8_t>;
+template class Buffer::Base<int16_t>;
+template class Buffer::Base<uint16_t>;
+template class Buffer::Base<int32_t>;
+template class Buffer::Base<uint32_t>;
+template class Buffer::Base<int64_t>;
+template class Buffer::Base<uint64_t>;
+
+// #if (int32_t != int_fast32_t)
+// template class Buffer::Base<int>;
+// #endif
+
+// #if (int32_t != int_fast32_t)
+// template class Buffer::Base<int_fast8_t>;
+// template class Buffer::Base<uint_fast8_t>;
+// template class Buffer::Base<int_fast16_t>;
+// template class Buffer::Base<uint_fast16_t>;
+// template class Buffer::Base<int_fast32_t>;
+// template class Buffer::Base<uint_fast32_t>;
+// template class Buffer::Base<int_fast64_t>;
+// template class Buffer::Base<uint_fast64_t>;
+// #endif
+
+template class Buffer::Base<float>;
+template class Buffer::Base<double>;
+template class Buffer::Base<long double>;
+
+// #if (int8_t != char)
+// template class Buffer::Base<char>;
+// template class Buffer::Base<unsigned char>;
+// #endif
+
+template class Buffer::Base<wchar_t>;
+template class Buffer::Base<char16_t>;
+template class Buffer::Base<char32_t>; */
+
+template class Buffer::RingBuffer<int8_t, int_fast8_t>;
+template class Buffer::RingBuffer<int8_t, std::atomic_int_fast8_t>;
+
+/* template class Buffer::RingBuffer<uint8_t>;
 template class Buffer::RingBuffer<int16_t>;
 template class Buffer::RingBuffer<uint16_t>;
 template class Buffer::RingBuffer<int32_t>;
@@ -814,30 +943,71 @@ template class Buffer::RingBuffer<uint32_t>;
 template class Buffer::RingBuffer<int64_t>;
 template class Buffer::RingBuffer<uint64_t>;
 
-#if (int32_t != int)
-template class Buffer::RingBuffer<int>;
-#endif
+// #if (int32_t != int)
+// template class Buffer::RingBuffer<int>;
+// #endif
 
-#if (int32_t != int_fast32_t)
-template class Buffer::RingBuffer<int_fast8_t>;
-template class Buffer::RingBuffer<uint_fast8_t>;
-template class Buffer::RingBuffer<int_fast16_t>;
-template class Buffer::RingBuffer<uint_fast16_t>;
-template class Buffer::RingBuffer<int_fast32_t>;
-template class Buffer::RingBuffer<uint_fast32_t>;
-template class Buffer::RingBuffer<int_fast64_t>;
-template class Buffer::RingBuffer<uint_fast64_t>;
-#endif
+// #if (int32_t != int_fast32_t)
+// template class Buffer::RingBuffer<int_fast8_t>;
+// template class Buffer::RingBuffer<uint_fast8_t>;
+// template class Buffer::RingBuffer<int_fast16_t>;
+// template class Buffer::RingBuffer<uint_fast16_t>;
+// template class Buffer::RingBuffer<int_fast32_t>;
+// template class Buffer::RingBuffer<uint_fast32_t>;
+// template class Buffer::RingBuffer<int_fast64_t>;
+// template class Buffer::RingBuffer<uint_fast64_t>;
+// #endif
 
 template class Buffer::RingBuffer<float>;
 template class Buffer::RingBuffer<double>;
 template class Buffer::RingBuffer<long double>;
 
-#if (int8_t != char)
-template class Buffer::RingBuffer<char>;
-template class Buffer::RingBuffer<unsigned char>;
-#endif
+// #if (int8_t != char)
+// template class Buffer::RingBuffer<char>;
+// template class Buffer::RingBuffer<unsigned char>;
+// #endif
 
 template class Buffer::RingBuffer<wchar_t>;
 template class Buffer::RingBuffer<char16_t>;
-template class Buffer::RingBuffer<char32_t>;
+template class Buffer::RingBuffer<char32_t>; */
+
+/* template class Buffer::AtomicRingBuffer<int8_t>; */
+/* template class Buffer::AtomicRingBuffer<uint8_t>;
+template class Buffer::AtomicRingBuffer<int16_t>;
+template class Buffer::AtomicRingBuffer<uint16_t>;
+template class Buffer::AtomicRingBuffer<int32_t>;
+template class Buffer::AtomicRingBuffer<uint32_t>;
+template class Buffer::AtomicRingBuffer<int64_t>;
+template class Buffer::AtomicRingBuffer<uint64_t>;
+
+// #if (int32_t != int)
+// template class Buffer::AtomicRingBuffer<int>;
+// #endif
+
+// #if (int32_t != int_fast32_t)
+// template class Buffer::AtomicRingBuffer<int_fast8_t>;
+// template class Buffer::AtomicRingBuffer<uint_fast8_t>;
+// template class Buffer::AtomicRingBuffer<int_fast16_t>;
+// template class Buffer::AtomicRingBuffer<uint_fast16_t>;
+// template class Buffer::AtomicRingBuffer<int_fast32_t>;
+// template class Buffer::AtomicRingBuffer<uint_fast32_t>;
+// template class Buffer::AtomicRingBuffer<int_fast64_t>;
+// template class Buffer::AtomicRingBuffer<uint_fast64_t>;
+// #endif
+
+template class Buffer::AtomicRingBuffer<float>;
+template class Buffer::AtomicRingBuffer<double>;
+template class Buffer::AtomicRingBuffer<long double>;
+
+// #if (int8_t != char)
+// template class Buffer::AtomicRingBuffer<char>;
+// template class Buffer::AtomicRingBuffer<unsigned char>;
+// #endif
+
+template class Buffer::AtomicRingBuffer<wchar_t>;
+template class Buffer::AtomicRingBuffer<char16_t>;
+template class Buffer::AtomicRingBuffer<char32_t>; */
+
+template class Buffer::NonAtomicRingBuffer<int8_t>;
+
+template class Buffer::AtomicRingBuffer<int8_t>;

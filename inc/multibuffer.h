@@ -6,13 +6,9 @@
 namespace Buffer
 {
 
-enum multiringbuffer_err
-{
-    BUFFER_COUNT_TOO_SHORT = -90,
-};
-
-template <typename T>
-class MultiRingBuffer : public Base<T>
+template <typename T, typename I>
+class MultiRingBuffer :
+public Buffer::Base<T, I>
 {
 
 protected:
@@ -21,13 +17,7 @@ protected:
 
 public:
 
-    /* Global indices */
-    std::atomic_int_fast8_t
-        globalReadIndex{0},
-        globalWriteIndex{0},
-        globalProcessingIndex{0};
-
-    std::vector<std::shared_ptr<RingBuffer<T>>> buffers;
+    std::vector<RingBuffer<T, I>> buffers;
 
 public:
 
@@ -42,13 +32,13 @@ public:
     ~MultiRingBuffer();
 
     bool size_is_set() const override;
-    
+
     virtual void set_size(
             int_fast32_t bufferSize,
             int_fast8_t ringSize,
             int_fast8_t numBuffers
         );
-    
+
     int_fast32_t size() const override;
     int_fast32_t total_size() const override;
     int_fast32_t num_buffers() const;
@@ -56,84 +46,136 @@ public:
     void fill(T value = 0);
     void reset() override;
 
-    std::shared_ptr<RingBuffer<T>> get_buffer(int_fast8_t bufferIndex);
+    auto get_buffer(int_fast8_t bufferIndex);
 
-// /*                          Sample Counters                         */
+/*                          Sample Counters                         */
 
-// public:
+protected:
 
-//     virtual int_fast32_t buffered() const;
-//     virtual int_fast32_t bytes_buffered() const;
+    /* Updates global sample counters
+    with the maximum value that can be applied
+    to all sub buffers; i.e., the greatest sample count
+    that can be written or read without overruns */
+    virtual void _update_sample_counters();
+    virtual void _increment_counters();
 
-//     virtual int_fast32_t available() const;
-//     virtual int_fast32_t bytes_available() const;
+public:
 
-//     virtual int_fast32_t processed() const;
-//     virtual int_fast32_t bytes_processed() const;
+    /* Updates sample counters and rotate buffers */
+    virtual void update();
 
-//     virtual int_fast32_t unprocessed() const;
-//     virtual int_fast32_t bytes_unprocessed() const;
+    /* Updates counters and return maximum common number
+    of samples buffered across all sub buffers */
+    int_fast32_t buffered();
+    
+    /* Updates counters and return maximum common number
+    of samples processed across all sub buffers */
+    int_fast32_t processed();
 
-//     virtual int_fast32_t unread() const;
-//     virtual int_fast32_t bytes_unread() const;
+/*                               Read                               */
 
-//     virtual int_fast32_t unwritten() const;
-//     virtual int_fast32_t bytes_unwritten() const;
+public:
 
-// /*                          Buffer Counters                         */
+    /* Reads an equal number of samples from each buffer
+    and returns a vector of interleaved samples
+    with length equal to buffer length */
+    virtual std::vector<T> read_interleaved();
 
-// public:
+    /* Reads an equal number of samples from each buffer
+    to a vector of interleaved samples with length equal
+    to buffer length */
+    virtual void read_interleaved(std::vector<T>* data);
 
-//     virtual int_fast32_t buffers_buffered() const;
-//     virtual int_fast32_t buffers_available() const;
-//     virtual int_fast32_t buffers_processed() const;
+    /* Copies specified number of samples divided among buffers
+    and interleaved to data pointer */
+    virtual void read_samples_interleaved(T* data, int_fast32_t length);
 
-// /*                               Read                               */
+    /* Copies specified number of bytes divided among buffers
+    and interleaved to data pointer */
+    virtual void read_bytes_interleaved(uint8_t* data, int_fast32_t numBytes);
 
-// protected:
+    /* Read an equal number of samples from each buffer
+    and returns a vector of concatenated samples
+    with length equal to buffer length */
+    virtual std::vector<T> read_concatenated();
 
-//     virtual std::vector<T> _read(int_fast8_t bufferIndex);
+    /* Reads an equal number of samples from each buffer
+    to a vector of concatenated samples with length equal
+    to buffer length */
+    virtual void read_concatenated(std::vector<T>* data);
+    
+    /* Copies specified number of samples divided among buffers
+    and concatenated to data pointer */
+    virtual void read_samples_concatenated(T* data, int_fast32_t length);
 
-// public:
+    /* Copies specified number of bytes divided among buffers
+    and concatenated to data pointer */
+    virtual void read_bytes_concatenated(uint8_t* data, int_fast32_t numBytes);
 
-//     virtual std::vector<T> read(int_fast8_t bufferIndex);
-//     virtual void read_samples(T* data, int_fast32_t length, int_fast8_t bufferIndex);
-//     virtual void read_bytes(uint8_t* data, int_fast32_t numBytes, int_fast8_t bufferIndex);
-//     virtual std::vector<T>* get_read_buffer(int_fast8_t bufferIndex);
-//     virtual T* get_read_buffer_sample(int_fast8_t bufferIndex);
-//     virtual uint8_t* get_read_buffer_byte(int_fast8_t bufferIndex);
-//     virtual T* get_read_sample(int_fast8_t bufferIndex);
-//     virtual uint8_t* get_read_byte(int_fast8_t bufferIndex);
-//     virtual void rotate_read_index(int_fast8_t bufferIndex);
-//     virtual void rotate_read_buffer(int_fast8_t bufferIndex);
-//     virtual void rotate_partial_read(int_fast32_t length, int_fast8_t bufferIndex);
-//     virtual void report_read_samples(int_fast32_t length, int_fast8_t bufferIndex);
-//     virtual void report_read_bytes(int_fast32_t numBytes, int_fast8_t bufferIndex);
+/*                               Write                              */
 
-// /*                               Write                              */
+public:
 
-// public:
+    /* Writes a single sample to each buffer.
+    If forced, unread data will be overwritten. */
+    int_fast32_t write(T data, bool force = false);
 
-//     virtual int_fast32_t write(T data, bool force = false);
-//     virtual int_fast32_t write(std::vector<T> data, bool force = false);
-//     virtual int_fast32_t write_samples(
-//             T* data,
-//             int_fast32_t length,
-//             bool force = false
-//         );
-//     virtual int_fast32_t write_bytes(
-//             uint8_t* data,
-//             int_fast32_t numBytes,
-//             bool force = false
-//         );
+    /* Writes to each buffer along respective rings
+    and returns lowest common number of samples
+    written to each. If forced, unread data
+    will be overwritten. */
+    int_fast32_t write(std::vector<T> data, bool force = false);
 
-//     virtual void rotate_write_index();
-//     virtual void rotate_write_buffer(bool force = false);
-//     virtual void rotate_partial_write(int_fast32_t length, bool force = false);
-//     virtual void report_written_sample(int_fast32_t length);
-//     virtual void report_written_byte(int_fast32_t numBytes);
+    /* Writes specified number of samples to each buffer
+    and return lowest common number of samples
+    written to each. If forced, unread data
+    will be overwritten. */
+    int_fast32_t write_samples(
+            T* data,
+            int_fast32_t length,
+            bool force = false
+        );
+    
+    /* Writes specified number of bytes to each buffer
+    and return lowest common number of bytes
+    written to each. If forced, unread data
+    will be overwritten. */
+    int_fast32_t write_bytes(
+            uint8_t* data,
+            int_fast32_t numBytes,
+            bool force = false
+        );
 
 };
+
+template <typename T>
+class NonAtomicMultiRingBuffer :
+public MultiRingBuffer<T, int_fast8_t>
+{
+public:
+
+    NonAtomicMultiRingBuffer();
+    NonAtomicMultiRingBuffer(int_fast32_t bufferSize, int_fast8_t ringSize, int_fast8_t numBuffers);
+    NonAtomicMultiRingBuffer(const NonAtomicMultiRingBuffer& obj);
+
+    ~NonAtomicMultiRingBuffer();
+
+};
+
+template <typename T>
+class AtomicMultiRingBuffer :
+public MultiRingBuffer<T, std::atomic_int_fast8_t>
+{
+public:
+
+    AtomicMultiRingBuffer();
+    AtomicMultiRingBuffer(int_fast32_t bufferSize, int_fast8_t ringSize, int_fast8_t numBuffers);
+    AtomicMultiRingBuffer(const AtomicMultiRingBuffer& obj);
+
+    ~AtomicMultiRingBuffer();
+
+};
+
 
 };
 
