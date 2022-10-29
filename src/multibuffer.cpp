@@ -512,57 +512,129 @@ AtomicMultiRingBuffer<T>::~AtomicMultiRingBuffer()
 {
 }
 
-
-
-
-
-
-
+/*                           Ring Buffer                            */
 
 template class Buffer::MultiRingBuffer<int8_t, int_fast8_t>;
+
+template class Buffer::MultiRingBuffer<uint8_t, int_fast8_t>;
+template class Buffer::MultiRingBuffer<int16_t, int_fast8_t>;
+template class Buffer::MultiRingBuffer<uint16_t, int_fast8_t>;
+template class Buffer::MultiRingBuffer<int32_t, int_fast8_t>;
+template class Buffer::MultiRingBuffer<uint32_t, int_fast8_t>;
+template class Buffer::MultiRingBuffer<int64_t, int_fast8_t>;
+template class Buffer::MultiRingBuffer<uint64_t, int_fast8_t>;
+
+#if (int32_t != int)
+template class Buffer::MultiRingBuffer<int, int_fast8_t>;
+#endif
+
+#if (int32_t != int_fast32_t)
+template class Buffer::MultiRingBuffer<int_fast8_t, int_fast8_t>;
+template class Buffer::MultiRingBuffer<uint_fast8_t, int_fast8_t>;
+template class Buffer::MultiRingBuffer<int_fast16_t, int_fast8_t>;
+template class Buffer::MultiRingBuffer<uint_fast16_t, int_fast8_t>;
+template class Buffer::MultiRingBuffer<int_fast32_t, int_fast8_t>;
+template class Buffer::MultiRingBuffer<uint_fast32_t, int_fast8_t>;
+template class Buffer::MultiRingBuffer<int_fast64_t, int_fast8_t>;
+template class Buffer::MultiRingBuffer<uint_fast64_t, int_fast8_t>;
+#endif
+
+template class Buffer::MultiRingBuffer<float, int_fast8_t>;
+template class Buffer::MultiRingBuffer<double, int_fast8_t>;
+template class Buffer::MultiRingBuffer<long double, int_fast8_t>;
+
+#if (int8_t != char)
+template class Buffer::MultiRingBuffer<char, int_fast8_t>;
+template class Buffer::MultiRingBuffer<unsigned char, int_fast8_t>;
+#endif
+
+template class Buffer::MultiRingBuffer<wchar_t, int_fast8_t>;
+template class Buffer::MultiRingBuffer<char16_t, int_fast8_t>;
+template class Buffer::MultiRingBuffer<char32_t, int_fast8_t>;
+
+/*                    Atomic Indices Ring Buffer                    */
+
 template class Buffer::MultiRingBuffer<int8_t, std::atomic_int_fast8_t>;
 
-/* template class Buffer::MultiRingBuffer<uint8_t>;
-template class Buffer::MultiRingBuffer<int16_t>;
-template class Buffer::MultiRingBuffer<uint16_t>;
-template class Buffer::MultiRingBuffer<int32_t>;
-template class Buffer::MultiRingBuffer<uint32_t>;
-template class Buffer::MultiRingBuffer<int64_t>;
-template class Buffer::MultiRingBuffer<uint64_t>;
+template class Buffer::MultiRingBuffer<uint8_t, std::atomic_int_fast8_t>;
+template class Buffer::MultiRingBuffer<int16_t, std::atomic_int_fast8_t>;
+template class Buffer::MultiRingBuffer<uint16_t, std::atomic_int_fast8_t>;
+template class Buffer::MultiRingBuffer<int32_t, std::atomic_int_fast8_t>;
+template class Buffer::MultiRingBuffer<uint32_t, std::atomic_int_fast8_t>;
+template class Buffer::MultiRingBuffer<int64_t, std::atomic_int_fast8_t>;
+template class Buffer::MultiRingBuffer<uint64_t, std::atomic_int_fast8_t>;
 
-// #if (int32_t != int_fast32_t)
-// template class Buffer::MultiRingBuffer<int>;
-// #endif
+#if (int32_t != int)
+template class Buffer::MultiRingBuffer<int, std::atomic_int_fast8_t>;
+#endif
 
-// #if (int32_t != int_fast32_t)
-// template class Buffer::MultiRingBuffer<int_fast8_t>;
-// template class Buffer::MultiRingBuffer<uint_fast8_t>;
-// template class Buffer::MultiRingBuffer<int_fast16_t>;
-// template class Buffer::MultiRingBuffer<uint_fast16_t>;
-// template class Buffer::MultiRingBuffer<int_fast32_t>;
-// template class Buffer::MultiRingBuffer<uint_fast32_t>;
-// template class Buffer::MultiRingBuffer<int_fast64_t>;
-// template class Buffer::MultiRingBuffer<uint_fast64_t>;
-// #endif
+#if (int32_t != int_fast32_t)
+template class Buffer::MultiRingBuffer<int_fast8_t, std::atomic_int_fast8_t>;
+template class Buffer::MultiRingBuffer<uint_fast8_t, std::atomic_int_fast8_t>;
+template class Buffer::MultiRingBuffer<int_fast16_t, std::atomic_int_fast8_t>;
+template class Buffer::MultiRingBuffer<uint_fast16_t, std::atomic_int_fast8_t>;
+template class Buffer::MultiRingBuffer<int_fast32_t, std::atomic_int_fast8_t>;
+template class Buffer::MultiRingBuffer<uint_fast32_t, std::atomic_int_fast8_t>;
+template class Buffer::MultiRingBuffer<int_fast64_t, std::atomic_int_fast8_t>;
+template class Buffer::MultiRingBuffer<uint_fast64_t, std::atomic_int_fast8_t>;
+#endif
 
-template class Buffer::MultiRingBuffer<float>;
-template class Buffer::MultiRingBuffer<double>;
-template class Buffer::MultiRingBuffer<long double>;
+template class Buffer::MultiRingBuffer<float, std::atomic_int_fast8_t>;
+template class Buffer::MultiRingBuffer<double, std::atomic_int_fast8_t>;
+template class Buffer::MultiRingBuffer<long double, std::atomic_int_fast8_t>;
 
-// #if (int8_t != char)
-// template class Buffer::MultiRingBuffer<char>;
-// template class Buffer::MultiRingBuffer<unsigned char>;
-// #endif
+#if (int8_t != char)
+template class Buffer::MultiRingBuffer<char, std::atomic_int_fast8_t>;
+template class Buffer::MultiRingBuffer<unsigned char, std::atomic_int_fast8_t>;
+#endif
 
-template class Buffer::MultiRingBuffer<wchar_t>;
-template class Buffer::MultiRingBuffer<char16_t>;
-template class Buffer::MultiRingBuffer<char32_t>; */
+template class Buffer::MultiRingBuffer<wchar_t, std::atomic_int_fast8_t>;
+template class Buffer::MultiRingBuffer<char16_t, std::atomic_int_fast8_t>;
+template class Buffer::MultiRingBuffer<char32_t, std::atomic_int_fast8_t>;
+
+/*                           Ring Buffer                            */
 
 template class Buffer::NonAtomicMultiRingBuffer<int8_t>;
+template class Buffer::NonAtomicMultiRingBuffer<uint8_t>;
+template class Buffer::NonAtomicMultiRingBuffer<int16_t>;
+template class Buffer::NonAtomicMultiRingBuffer<uint16_t>;
+template class Buffer::NonAtomicMultiRingBuffer<int32_t>;
+template class Buffer::NonAtomicMultiRingBuffer<uint32_t>;
+template class Buffer::NonAtomicMultiRingBuffer<int64_t>;
+template class Buffer::NonAtomicMultiRingBuffer<uint64_t>;
+
+#if (int32_t != int)
+template class Buffer::NonAtomicMultiRingBuffer<int>;
+#endif
+
+#if (int32_t != int_fast32_t)
+template class Buffer::NonAtomicMultiRingBuffer<int_fast8_t>;
+template class Buffer::NonAtomicMultiRingBuffer<uint_fast8_t>;
+template class Buffer::NonAtomicMultiRingBuffer<int_fast16_t>;
+template class Buffer::NonAtomicMultiRingBuffer<uint_fast16_t>;
+template class Buffer::NonAtomicMultiRingBuffer<int_fast32_t>;
+template class Buffer::NonAtomicMultiRingBuffer<uint_fast32_t>;
+template class Buffer::NonAtomicMultiRingBuffer<int_fast64_t>;
+template class Buffer::NonAtomicMultiRingBuffer<uint_fast64_t>;
+#endif
+
+template class Buffer::NonAtomicMultiRingBuffer<float>;
+template class Buffer::NonAtomicMultiRingBuffer<double>;
+template class Buffer::NonAtomicMultiRingBuffer<long double>;
+
+#if (int8_t != char)
+template class Buffer::NonAtomicMultiRingBuffer<char>;
+template class Buffer::NonAtomicMultiRingBuffer<unsigned char>;
+#endif
+
+template class Buffer::NonAtomicMultiRingBuffer<wchar_t>;
+template class Buffer::NonAtomicMultiRingBuffer<char16_t>;
+template class Buffer::NonAtomicMultiRingBuffer<char32_t>;
+
+/*                    Atomic Indices Ring Buffer                    */
 
 template class Buffer::AtomicMultiRingBuffer<int8_t>;
-
-/* template class Buffer::AtomicMultiRingBuffer<uint8_t>;
+template class Buffer::AtomicMultiRingBuffer<uint8_t>;
 template class Buffer::AtomicMultiRingBuffer<int16_t>;
 template class Buffer::AtomicMultiRingBuffer<uint16_t>;
 template class Buffer::AtomicMultiRingBuffer<int32_t>;
@@ -570,30 +642,30 @@ template class Buffer::AtomicMultiRingBuffer<uint32_t>;
 template class Buffer::AtomicMultiRingBuffer<int64_t>;
 template class Buffer::AtomicMultiRingBuffer<uint64_t>;
 
-// #if (int32_t != int)
-// template class Buffer::AtomicMultiRingBuffer<int>;
-// #endif
+#if (int32_t != int)
+template class Buffer::AtomicMultiRingBuffer<int>;
+#endif
 
-// #if (int32_t != int_fast32_t)
-// template class Buffer::AtomicMultiRingBuffer<int_fast8_t>;
-// template class Buffer::AtomicMultiRingBuffer<uint_fast8_t>;
-// template class Buffer::AtomicMultiRingBuffer<int_fast16_t>;
-// template class Buffer::AtomicMultiRingBuffer<uint_fast16_t>;
-// template class Buffer::AtomicMultiRingBuffer<int_fast32_t>;
-// template class Buffer::AtomicMultiRingBuffer<uint_fast32_t>;
-// template class Buffer::AtomicMultiRingBuffer<int_fast64_t>;
-// template class Buffer::AtomicMultiRingBuffer<uint_fast64_t>;
-// #endif
+#if (int32_t != int_fast32_t)
+template class Buffer::AtomicMultiRingBuffer<int_fast8_t>;
+template class Buffer::AtomicMultiRingBuffer<uint_fast8_t>;
+template class Buffer::AtomicMultiRingBuffer<int_fast16_t>;
+template class Buffer::AtomicMultiRingBuffer<uint_fast16_t>;
+template class Buffer::AtomicMultiRingBuffer<int_fast32_t>;
+template class Buffer::AtomicMultiRingBuffer<uint_fast32_t>;
+template class Buffer::AtomicMultiRingBuffer<int_fast64_t>;
+template class Buffer::AtomicMultiRingBuffer<uint_fast64_t>;
+#endif
 
 template class Buffer::AtomicMultiRingBuffer<float>;
 template class Buffer::AtomicMultiRingBuffer<double>;
 template class Buffer::AtomicMultiRingBuffer<long double>;
 
-// #if (int8_t != char)
-// template class Buffer::AtomicMultiRingBuffer<char>;
-// template class Buffer::AtomicMultiRingBuffer<unsigned char>;
-// #endif
+#if (int8_t != char)
+template class Buffer::AtomicMultiRingBuffer<char>;
+template class Buffer::AtomicMultiRingBuffer<unsigned char>;
+#endif
 
 template class Buffer::AtomicMultiRingBuffer<wchar_t>;
 template class Buffer::AtomicMultiRingBuffer<char16_t>;
-template class Buffer::AtomicMultiRingBuffer<char32_t>; */
+template class Buffer::AtomicMultiRingBuffer<char32_t>;
