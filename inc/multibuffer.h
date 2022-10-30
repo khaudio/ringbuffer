@@ -155,7 +155,11 @@ public MultiRingBuffer<T, int_fast8_t>
 public:
 
     NonAtomicMultiRingBuffer();
-    NonAtomicMultiRingBuffer(int_fast32_t bufferSize, int_fast8_t ringSize, int_fast8_t numBuffers);
+    NonAtomicMultiRingBuffer(
+            int_fast32_t bufferSize,
+            int_fast8_t ringSize,
+            int_fast8_t numBuffers
+        );
     NonAtomicMultiRingBuffer(const NonAtomicMultiRingBuffer& obj);
 
     ~NonAtomicMultiRingBuffer();
@@ -169,13 +173,16 @@ public MultiRingBuffer<T, std::atomic_int_fast8_t>
 public:
 
     AtomicMultiRingBuffer();
-    AtomicMultiRingBuffer(int_fast32_t bufferSize, int_fast8_t ringSize, int_fast8_t numBuffers);
+    AtomicMultiRingBuffer(
+            int_fast32_t bufferSize,
+            int_fast8_t ringSize,
+            int_fast8_t numBuffers
+        );
     AtomicMultiRingBuffer(const AtomicMultiRingBuffer& obj);
 
     ~AtomicMultiRingBuffer();
 
 };
-
 
 };
 

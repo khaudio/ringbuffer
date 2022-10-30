@@ -72,35 +72,6 @@ constexpr I float_to_int(F value)
         );
 }
 
-// template <typename F, typename I>
-// constexpr I float_to_int(F value)
-// {
-//     if (value == 0.0) return get_zero<I>();
-//     else if (std::is_unsigned<I>())
-//     {
-//         if (value < 0)
-//         {
-//             return static_cast<I>(std::round(
-//                     static_cast<F>(get_zero<I>())
-//                     + (value * static_cast<F>(get_zero<I>()))
-//                 ));
-//         }
-//         return static_cast<I>(
-//                 (value * (get_zero<I>() - 1))
-//                 + get_zero<I>()
-//             );
-//     }
-//     else if (value < 0)
-//     {
-//         return static_cast<I>(
-//                 std::round(value * std::numeric_limits<I>::min())
-//             );
-//     }
-//     return static_cast<I>(
-//             std::round(value * std::numeric_limits<I>::max())
-//         );
-// }
-
 template <typename F, typename I>
 constexpr void float_to_int(I* converted, F* value)
 {

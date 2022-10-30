@@ -10,7 +10,7 @@ int main(int argc, char** argv)
         std::cout << "Debug mode enabled\n";
         #endif
 
-        Buffer::NonAtomicMultiRingBuffer<DATATYPE> buff(8, 2, 2);
+        Buffer::AtomicMultiRingBuffer<DATATYPE> buff(8, 2, 2);
 
         std::vector<DATATYPE> vec;
         for (int i(0); i < buff.buffer_length(); ++i)
