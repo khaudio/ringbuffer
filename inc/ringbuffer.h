@@ -102,7 +102,7 @@ public:
     Base(int_fast32_t bufferSize, int_fast8_t ringSize);
     Base(const Base& obj);
 
-    ~Base();
+    virtual ~Base();
 
     /* Indicator as to whether ring
     and buffer vectors have been allocated */
@@ -275,7 +275,7 @@ public:
     RingBuffer(int_fast32_t bufferSize, int_fast8_t ringSize);
     RingBuffer(const RingBuffer& obj);
 
-    ~RingBuffer();
+    virtual ~RingBuffer();
 
     /* Sets ring and buffer size and allocates vectors */
     virtual void set_size(int_fast32_t bufferSize, int_fast8_t ringSize);
@@ -406,7 +406,7 @@ public:
     NonAtomicRingBuffer(int_fast32_t bufferSize, int_fast8_t ringSize);
     NonAtomicRingBuffer(const NonAtomicRingBuffer& obj);
 
-    ~NonAtomicRingBuffer();
+    virtual ~NonAtomicRingBuffer();
 
 };
 
@@ -420,7 +420,7 @@ public:
     AtomicRingBuffer(int_fast32_t bufferSize, int_fast8_t ringSize);
     AtomicRingBuffer(const AtomicRingBuffer& obj);
     
-    ~AtomicRingBuffer();
+    virtual ~AtomicRingBuffer();
 
 };
 

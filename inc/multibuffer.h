@@ -29,7 +29,7 @@ public:
         );
     MultiRingBuffer(const MultiRingBuffer& obj);
 
-    ~MultiRingBuffer();
+    virtual ~MultiRingBuffer();
 
     bool size_is_set() const override;
 
@@ -41,7 +41,7 @@ public:
 
     int_fast32_t size() const override;
     int_fast32_t total_size() const override;
-    int_fast32_t num_buffers() const;
+    int_fast8_t num_buffers() const;
 
     void fill(T value = 0);
     void reset() override;
@@ -162,7 +162,7 @@ public:
         );
     NonAtomicMultiRingBuffer(const NonAtomicMultiRingBuffer& obj);
 
-    ~NonAtomicMultiRingBuffer();
+    virtual ~NonAtomicMultiRingBuffer();
 
 };
 
@@ -180,7 +180,7 @@ public:
         );
     AtomicMultiRingBuffer(const AtomicMultiRingBuffer& obj);
 
-    ~AtomicMultiRingBuffer();
+    virtual ~AtomicMultiRingBuffer();
 
 };
 
