@@ -1313,5 +1313,42 @@ template class Buffer::AtomicRingBuffer<wchar_t>;
 template class Buffer::AtomicRingBuffer<char16_t>;
 template class Buffer::AtomicRingBuffer<char32_t>;
 
+/*           Atomic Indices Multi Read Counter Ring Buffer          */
 
 template class Buffer::AtomicMultiReadRingBuffer<int8_t>;
+template class Buffer::AtomicMultiReadRingBuffer<uint8_t>;
+template class Buffer::AtomicMultiReadRingBuffer<int16_t>;
+template class Buffer::AtomicMultiReadRingBuffer<uint16_t>;
+template class Buffer::AtomicMultiReadRingBuffer<int32_t>;
+template class Buffer::AtomicMultiReadRingBuffer<uint32_t>;
+template class Buffer::AtomicMultiReadRingBuffer<int64_t>;
+template class Buffer::AtomicMultiReadRingBuffer<uint64_t>;
+
+// #if (int32_t != int)
+// template class Buffer::AtomicMultiReadRingBuffer<int>;
+// #endif
+
+#if (int32_t != int_fast32_t)
+template class Buffer::AtomicMultiReadRingBuffer<int_fast8_t>;
+template class Buffer::AtomicMultiReadRingBuffer<uint_fast8_t>;
+template class Buffer::AtomicMultiReadRingBuffer<int_fast16_t>;
+template class Buffer::AtomicMultiReadRingBuffer<uint_fast16_t>;
+template class Buffer::AtomicMultiReadRingBuffer<int_fast32_t>;
+template class Buffer::AtomicMultiReadRingBuffer<uint_fast32_t>;
+template class Buffer::AtomicMultiReadRingBuffer<int_fast64_t>;
+template class Buffer::AtomicMultiReadRingBuffer<uint_fast64_t>;
+#endif
+
+template class Buffer::AtomicMultiReadRingBuffer<float>;
+template class Buffer::AtomicMultiReadRingBuffer<double>;
+template class Buffer::AtomicMultiReadRingBuffer<long double>;
+
+// #if (int8_t != char)
+// template class Buffer::AtomicMultiReadRingBuffer<char>;
+// template class Buffer::AtomicMultiReadRingBuffer<unsigned char>;
+// #endif
+
+template class Buffer::AtomicMultiReadRingBuffer<wchar_t>;
+template class Buffer::AtomicMultiReadRingBuffer<char16_t>;
+template class Buffer::AtomicMultiReadRingBuffer<char32_t>;
+
