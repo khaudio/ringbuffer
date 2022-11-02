@@ -56,7 +56,7 @@ target_include_directories(multibuffer
 # if(CMAKE_COMPILER_IS_GNUCXX)
 #     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -O0 -g -pedantic -Werror -Wextra -Wall -Wshadow-compatible-local")
 # else()
-#     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /W4")
+#     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS}")
 # endif(CMAKE_COMPILER_IS_GNUCXX)
 
 # target_compile_options(${PROJECT_NAME}

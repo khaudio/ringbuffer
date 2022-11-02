@@ -302,6 +302,7 @@ template <typename T, typename I>
 inline void Base<T, I>::report_read_samples(int_fast32_t length)
 {
     #ifdef _DEBUG
+    std::cout << "Reporting " << length << " read samples\n";
     if (length > this->_samplesUnread)
     {
         std::cerr << "Length must be <= unread samples\n";
@@ -996,6 +997,85 @@ AtomicRingBuffer<T>::~AtomicRingBuffer()
 {
 }
 
+template <typename T>
+AtomicMultiReadRingBuffer<T>::AtomicMultiReadRingBuffer() :
+AtomicRingBuffer<T>()
+{
+}
+
+template <typename T>
+AtomicMultiReadRingBuffer<T>::AtomicMultiReadRingBuffer(
+        int_fast32_t bufferSize,
+        int_fast8_t ringSize
+    ) :
+AtomicRingBuffer<T>(bufferSize, ringSize)
+{
+}
+
+template <typename T>
+AtomicMultiReadRingBuffer<T>::AtomicMultiReadRingBuffer(
+        const AtomicMultiReadRingBuffer& obj
+    ) :
+AtomicRingBuffer<T>(obj)
+{
+    int_fast8_t readers = obj._numReaders;
+    this->_numReaders = readers;
+    int_fast8_t counter = obj._readCounter;
+    this->_readCounter = counter;
+}
+
+template <typename T>
+AtomicMultiReadRingBuffer<T>::~AtomicMultiReadRingBuffer()
+{
+}
+
+template <typename T>
+inline bool AtomicMultiReadRingBuffer<T>::_increment_read_counter()
+{
+    std::cout << "incrementing multiread counter from " << +this->_readCounter;
+    this->_readCounter = ++this->_readCounter % this->_numReaders;
+    std:: cout << " to " << +this->_readCounter << " of " << +this->_numReaders << '\n';
+    return !this->_readCounter;
+}
+
+template <typename T>
+inline void AtomicMultiReadRingBuffer<T>::set_num_readers(int_fast8_t numReaders)
+{
+    #ifdef _DEBUG
+    if (
+            (numReaders <= 0)
+            || (numReaders > std::numeric_limits<int_fast8_t>::max())
+        )
+    {
+        throw std::out_of_range(
+                "Number of readers must be 0 < num readers < datatype max"
+            );
+    }
+    #endif
+    this->_numReaders = numReaders;
+}
+
+template <typename T>
+inline int_fast8_t AtomicMultiReadRingBuffer<T>::num_readers() const
+{
+    return this->_numReaders;
+}
+
+template <typename T>
+inline void AtomicMultiReadRingBuffer<T>::report_read_samples(int_fast32_t length)
+{
+    if (!_increment_read_counter()) return;
+    AtomicRingBuffer<T>::report_read_samples(length);
+}
+
+
+template <typename T>
+std::vector<T> AtomicMultiReadRingBuffer<T>::read()
+{
+    std::vector<T> output(AtomicRingBuffer<T>::_read());
+    report_read_samples(this->_bufferLength);
+    return output;
+}
 
 /*                      Template Instantiations                     */
 
@@ -1232,3 +1312,6 @@ template class Buffer::AtomicRingBuffer<long double>;
 template class Buffer::AtomicRingBuffer<wchar_t>;
 template class Buffer::AtomicRingBuffer<char16_t>;
 template class Buffer::AtomicRingBuffer<char32_t>;
+
+
+template class Buffer::AtomicMultiReadRingBuffer<int8_t>;

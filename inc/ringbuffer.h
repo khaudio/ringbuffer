@@ -424,6 +424,46 @@ public:
 
 };
 
+
+template <typename T>
+class AtomicMultiReadRingBuffer :
+public AtomicRingBuffer<T>
+{
+protected:
+
+    std::atomic_int_fast8_t
+        _readCounter{0},
+        _numReaders{1};
+
+protected:
+
+    /* Increments read counter and returns true
+    if reported read by all readers */
+    virtual bool _increment_read_counter();
+
+public:
+
+    AtomicMultiReadRingBuffer();
+    AtomicMultiReadRingBuffer(int_fast32_t bufferSize, int_fast8_t ringSize);
+    AtomicMultiReadRingBuffer(const AtomicMultiReadRingBuffer& obj);
+
+    virtual ~AtomicMultiReadRingBuffer();
+
+    virtual void set_num_readers(int_fast8_t numReaders = 1);
+    virtual int_fast8_t num_readers() const;
+
+/*                               Read                               */
+
+public:
+
+    /* Returns current read buffer and reports read */
+    virtual std::vector<T> read() override;
+
+    /* Update counters with number of samples read externally */
+    virtual void report_read_samples(int_fast32_t length);
+
+};
+
 };
 
 #endif
