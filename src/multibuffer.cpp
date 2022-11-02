@@ -20,8 +20,8 @@ MultiRingBuffer<T, I>::MultiRingBuffer(
 
 template <typename T, typename I>
 MultiRingBuffer<T, I>::MultiRingBuffer(const MultiRingBuffer& obj) :
-_numBuffers(obj._numBuffers),
-Base<T, I>(obj)
+Base<T, I>(obj),
+_numBuffers(obj._numBuffers)
 {
     set_size(obj.buffer_length(), obj.ring_length(), obj.num_buffers());
     for (int i(0); i < this->_numBuffers; ++i)
